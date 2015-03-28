@@ -1,0 +1,27 @@
+1.2
+	- Changed the text color of the link text in the first column
+	- Link text is now black if non-existant, blue if on the H drive, purple if on the K drive, and red if other.
+	- Edit Dialog Box will autofill filename to k drive if folder exists, and an H drive one does not.
+	- Add, Remove, and Edit will now cause the form to reload the list, and report if the job has been removed or changed.
+	
+1.3
+	- New Drawer Column
+	- Auto-Updates Old data files
+	- New "Refresh" Button
+	- Status strip at bottom displays the last time the form was updated.
+	- Fixed Edit Bug where it would say Another user was faster than you if had to change something from the H to the K drive.
+	- Now checks K drive for files even if theyre file name says H:/ and changes them if they exist there but not the H drive.
+
+1.3.1
+	- Jobs are now opened in the same Windows Explorer window if possible
+	- Displays a loading message when refreshing the list
+	- Allows user to choose if they want to refresh before adding or editing
+
+1.3.2
+	- Removed loading message
+	- Changed Refresh prompt text
+	- Fixed cancel bug
+	- Fixed add (used to refresh before asking)
+
+1.3.3
+	- Changed Gmail password

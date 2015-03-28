@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Milbrandt PDF Viewer</title>
+
+<script language="JavaScript" type="text/javascript">
+<!-- Begin
+function getParams() {
+var idx = document.URL.indexOf('?');
+if (idx != -1) {
+var tempParams = new Object();
+var pairs = document.URL.substring(idx+1,document.URL.length).split('&');
+for (var i=0; i<pairs.length; i++) {
+nameVal = pairs[i].split('=');
+tempParams[nameVal[0]] = nameVal[1];
+}
+return tempParams;
+}
+}
+var params = getParams();
+// End --> 
+</script>
+
+<script language="JavaScript" type="text/javascript">
+<!-- Begin
+file = unescape(params["filename"]);
+filename = "H:\\1001\\PDF_Files\\" + file;
+width = unescape(params["width"]);
+height = unescape(params["height"]);
+content='<embed src=' + filename + ' width="' + width + '" height="' + height + '">';
+document.write(content);
+// End --> 
+</script>
+
+</head>
+
+<body>
+
+</body>
+</html>

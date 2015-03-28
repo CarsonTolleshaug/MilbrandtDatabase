@@ -1,0 +1,24 @@
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\bin\Debug\Milbrandt Job List.exe
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\bin\Debug\Milbrandt Job List.pdb
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\ResolveAssemblyReference.cache
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\HyperlinkJobsList.EditForm.resources
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\HyperlinkJobsList.Form1.resources
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\HyperlinkJobsList.Properties.Resources.resources
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\Milbrandt Job List.csproj.GenerateResource.Cache
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\Milbrandt Job List.exe
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\Milbrandt Job List.pdb
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\obj\Debug\Milbrandt Job List.exe
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\obj\Debug\Milbrandt Job List.pdb
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\bin\Debug\Milbrandt Job List.exe
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\bin\Debug\Milbrandt Job List.pdb
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\obj\Debug\ResolveAssemblyReference.cache
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\obj\Debug\HyperlinkJobsList.EditForm.resources
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\obj\Debug\HyperlinkJobsList.Form1.resources
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\obj\Debug\HyperlinkJobsList.Properties.Resources.resources
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3 - Copy\Milbrandt Job List\obj\Debug\Milbrandt Job List.csproj.GenerateResource.Cache
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\HyperlinkJobsList.LoadingBox.resources
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\Interop.SHDocVw.dll
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\Milbrandt Job List.csproj.ResolveComReference.cache
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\obj\Debug\Interop.Shell32.dll
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\bin\Debug\Interop.SHDocVw.dll
+D:\Documents\Visual Studio 2008\Milbrandt Job List\1.3\Milbrandt Job List\bin\Debug\Interop.Shell32.dll
