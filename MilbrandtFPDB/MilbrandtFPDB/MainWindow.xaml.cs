@@ -140,5 +140,35 @@ namespace MilbrandtFPDB
         {
             _vm.RefreshDisplay();
         }
+
+        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            LaunchAddEditWizard(AddEditWizardType.Add);
+        }
+
+        private void btnEdit_Click(object sender, RoutedEventArgs e)
+        {
+            LaunchAddEditWizard(AddEditWizardType.Edit);
+        }
+
+        private void LaunchAddEditWizard(AddEditWizardType type)
+        {
+            AddEditWizard wizard;
+
+            if (type == AddEditWizardType.Add)
+                wizard = new AddEditWizard(type, _vm);
+            else
+            {
+                if (dgSitePlans.SelectedItems.Count != 1)
+                    return;
+
+                wizard = new AddEditWizard(type, _vm, (SitePlan)dgSitePlans.SelectedItem);
+            }
+
+            bool? result = wizard.ShowDialog();
+
+            // TODO: save if result is good
+        }
+
     }
 }

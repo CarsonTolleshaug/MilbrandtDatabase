@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace MilbrandtFPDB
 {
-    class DataGridViewModel : INotifyPropertyChanged
+    public class DataGridViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
         

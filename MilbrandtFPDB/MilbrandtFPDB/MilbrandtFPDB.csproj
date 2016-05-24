@@ -80,12 +80,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AddEditWizard.xaml.cs">
+      <DependentUpon>AddEditWizard.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AddEditWizardViewModel.cs" />
     <Compile Include="DataGridViewModel.cs" />
     <Compile Include="DBHelper.cs" />
     <Compile Include="PdfViewer.xaml.cs">
       <DependentUpon>PdfViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="SitePlan.cs" />
+    <Page Include="AddEditWizard.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

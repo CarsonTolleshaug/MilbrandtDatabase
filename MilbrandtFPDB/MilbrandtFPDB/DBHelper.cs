@@ -8,9 +8,9 @@ using System.Diagnostics;
 
 namespace MilbrandtFPDB
 {
-    enum DatabaseType { Flat, SingleFamily, Townhome, Carriage }
+    public enum DatabaseType { Flat, SingleFamily, Townhome, Carriage }
 
-    static class DBHelper
+    public static class DBHelper
     {
         private static string settingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FPDatabase"); //<- Defualt System Directory 
         //"C:/Program Files/FP Database";

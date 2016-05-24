@@ -12,7 +12,7 @@ namespace MilbrandtFPDB
 {
     enum SortMethod { Default, Accending, Decending }
 
-    class SitePlan : INotifyPropertyChanged
+    public class SitePlan : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

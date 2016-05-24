@@ -28,8 +28,8 @@
         </DataGrid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Button x:Name="btnAdd" Content="Add New Entry" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100"/>
-            <Button x:Name="btnEdit" Content="Edit Entry" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100"/>
+            <Button x:Name="btnAdd" Content="Add New Entry" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnAdd_Click"/>
+            <Button x:Name="btnEdit" Content="Edit Entry" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnEdit_Click"/>
             <Button x:Name="btnRemove" Content="Remove Entry" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnRemove_Click"/>
         </StackPanel>
         
