@@ -35,9 +35,9 @@
         </Rectangle>
         
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Button x:Name="btnAdd" Content="Add New Entry" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnAdd_Click"/>
-            <Button x:Name="btnEdit" Content="Edit Entry" IsEnabled="False" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnEdit_Click"/>
-            <Button x:Name="btnRemove" Content="Remove Entry" IsEnabled="False" HorizontalAlignment="Left" Margin="10, 10, 0, 10" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnRemove_Click"/>
+            <Button x:Name="btnAdd" Content="Add New Entry" HorizontalAlignment="Left" Margin="10, 0, 0, 0" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnAdd_Click"/>
+            <Button x:Name="btnEdit" Content="Edit Entry" IsEnabled="False" HorizontalAlignment="Left" Margin="10, 0, 0, 0" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnEdit_Click"/>
+            <Button x:Name="btnRemove" Content="Remove Entry" IsEnabled="False" HorizontalAlignment="Left" Margin="10, 0, 0, 0" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="btnRemove_Click"/>
         </StackPanel>
         
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">

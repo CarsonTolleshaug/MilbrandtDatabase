@@ -47,11 +47,13 @@ namespace MilbrandtFPDB
 
         private UIElement GenerateElement(string propertyName)
         {
+            // Create grid to be our root element
             Grid grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(3, GridUnitType.Star) });
             grid.Margin = new System.Windows.Thickness(0, 0, 20, 4);
 
+            // Create label on left side to show property name
             Label propLabel = new Label();
             propLabel.Content = _vm.GetParameterDisplayName(propertyName);
             propLabel.Margin = new Thickness(0, 0, 10, 0);
@@ -59,29 +61,59 @@ namespace MilbrandtFPDB
             propLabel.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
             propLabel.SetValue(Grid.ColumnProperty, 0);
 
-            ComboBox propCB = new ComboBox();
-            propCB.IsEditable = true;
-            propCB.SetValue(Grid.ColumnProperty, 1);
-            propCB.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
-
-            // Set binding for ItemsSource
-            Binding sourceBinding = new Binding("AvailableValues[" + propertyName + "]");
-            sourceBinding.Source = _vm;
-            sourceBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-            propCB.SetBinding(ComboBox.ItemsSourceProperty, sourceBinding);
-
-            // Set binding for Text (SelectedItem)
-            Binding selectBinding = new Binding("PropertyValues[" + propertyName + "].Value");
-            selectBinding.Source = _vm;
-            selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
-            selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.LostFocus;
-            propCB.SetBinding(ComboBox.TextProperty, selectBinding);
-
-            // Add label and combo box to grid and return it
+            // Add Label to grid
             grid.Children.Add(propLabel);
-            grid.Children.Add(propCB);
+
+            // Special Date Selector
+            if (propertyName == "Date")
+            {
+                DatePicker dp = new DatePicker();
+                dp.SelectedDateChanged += DatePickerDateChanged;
+                dp.SetValue(Grid.ColumnProperty, 1);
+                dp.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
+
+                // Set binding for Text
+                Binding selectBinding = new Binding("PropertyValues[Date].Value");
+                selectBinding.Source = _vm;
+                selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
+                selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+                dp.SetBinding(DatePicker.TextProperty, selectBinding);
+
+                // Add DatePicker to grid
+                grid.Children.Add(dp);
+            }
+            else
+            {
+                ComboBox propCB = new ComboBox();
+                propCB.IsEditable = true;
+                propCB.SetValue(Grid.ColumnProperty, 1);
+                propCB.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
+
+                // Set binding for ItemsSource
+                Binding sourceBinding = new Binding("AvailableValues[" + propertyName + "]");
+                sourceBinding.Source = _vm;
+                sourceBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+                propCB.SetBinding(ComboBox.ItemsSourceProperty, sourceBinding);
+
+                // Set binding for Text (SelectedItem)
+                Binding selectBinding = new Binding("PropertyValues[" + propertyName + "].Value");
+                selectBinding.Source = _vm;
+                selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
+                selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.LostFocus;
+                propCB.SetBinding(ComboBox.TextProperty, selectBinding);
+
+                // combo box to grid            
+                grid.Children.Add(propCB);
+            }
 
             return grid;
+        }
+
+        private void DatePickerDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            DatePicker dp = (sender as DatePicker);
+            if (dp != null && dp.SelectedDate.HasValue)
+                _vm.PropertyValues["Date"].Value = dp.SelectedDate.Value.ToShortDateString();
         }
 
         private void btnBrowse_Click(object sender, RoutedEventArgs e)

@@ -36,7 +36,8 @@ namespace MilbrandtFPDB
             AvailableValues = new Dictionary<string, ObservableCollection<string>>();
             foreach (string property in SitePlan.Parameters)
             {
-                if (property != "FilePath")
+                // FilePath and Date do not need available values
+                if (property != "FilePath" && property != "Date")
                 {
                     HashSet<string> distinctValues = new HashSet<string>();
                     foreach (SitePlan sp in _mainVM.Entries)
@@ -181,24 +182,17 @@ namespace MilbrandtFPDB
                 return;
 
             // Plan from filename
-            if (String.IsNullOrWhiteSpace(PropertyValues["Plan"].Value))
-            {
-                string plan = Path.GetFileNameWithoutExtension(FilePath);
-                PropertyValues["Plan"].Value = plan.Replace('_', ' ');
-            }
+            string plan = Path.GetFileNameWithoutExtension(FilePath);
+            SetPropertyIfEmpty("Plan", plan.Replace('_', ' '));
 
             // Project Number and Plan from path
-            if (String.IsNullOrWhiteSpace(PropertyValues["ProjectNumber"].Value))
-            {
-                string projNum = Directory.GetParent(FilePath).Name;
-                PropertyValues["ProjectNumber"].Value = projNum;
-            }
+            string projNum = Directory.GetParent(FilePath).Name;
+            SetPropertyIfEmpty("ProjectNumber", projNum);
         }
 
         public void AutofillFromProjectNumber()
         {
             string projNum = PropertyValues["ProjectNumber"].Value;
-
             if (String.IsNullOrWhiteSpace(projNum))
                 return;
 
@@ -206,11 +200,17 @@ namespace MilbrandtFPDB
             SitePlan sitePlanWithSamePN = _mainVM.Entries.FirstOrDefault(m => m.ProjectNumber == projNum);
             if (sitePlanWithSamePN != null)
             {
-                PropertyValues["ProjectName"].Value = sitePlanWithSamePN.ProjectName;
-                PropertyValues["ClientName"].Value = sitePlanWithSamePN.ClientName;
-                PropertyValues["Location"].Value = sitePlanWithSamePN.Location;
-                PropertyValues["Date"].Value = sitePlanWithSamePN.Date;
+                SetPropertyIfEmpty("ProjectName", sitePlanWithSamePN.ProjectName);
+                SetPropertyIfEmpty("ClientName", sitePlanWithSamePN.ClientName);
+                SetPropertyIfEmpty("Location", sitePlanWithSamePN.Location);
+                SetPropertyIfEmpty("Date", sitePlanWithSamePN.Date);
             }
+        }
+
+        private void SetPropertyIfEmpty(string propertyName, string value)
+        {
+            if (String.IsNullOrWhiteSpace(PropertyValues[propertyName].Value))
+                PropertyValues[propertyName].Value = value;
         }
     }
 }

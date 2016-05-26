@@ -31,7 +31,7 @@
             
             <Label Content="PDF File" HorizontalAlignment="Right" VerticalAlignment="Center" />
             <TextBox x:Name="txtFilePath" Grid.Column="1" Text="{Binding Path=FilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1"/>
-            <Button x:Name="btnBrowse" Content="Browse..." Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Click="btnBrowse_Click"/>
+            <Button x:Name="btnBrowse" Content="Browse..." Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" Click="btnBrowse_Click"/>
         </Grid>        
         
         <StackPanel x:Name="propertiesPanel" Grid.Row="2" Orientation="Vertical" Margin="10,10,10,0">
@@ -54,7 +54,7 @@
             </Grid.ColumnDefinitions>
             
             <Button x:Name="btnCancel" Grid.Column="0" Content="Cancel" IsCancel="True" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            <Button x:Name="btnSave" Grid.Column="1" Content="Save" IsDefault="True" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" Click="btnSave_Click" />
+            <Button x:Name="btnSave" Grid.Column="1" Content="Save" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" Click="btnSave_Click" />
         </Grid>
 
     </Grid>
