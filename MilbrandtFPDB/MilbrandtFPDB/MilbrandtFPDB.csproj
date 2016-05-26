@@ -57,6 +57,14 @@
     <Reference Include="PdfiumViewer">
       <HintPath>..\packages\PdfiumViewer.2.9.0.0\lib\net20\PdfiumViewer.dll</HintPath>
     </Reference>
+    <Reference Include="PdfSharp, Version=1.50.4000.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\PDFsharp.1.50.4000-beta3b\lib\net20\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=1.50.4000.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\PDFsharp.1.50.4000-beta3b\lib\net20\PdfSharp.Charting.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -86,6 +94,7 @@
     <Compile Include="AddEditWizardViewModel.cs" />
     <Compile Include="DataGridViewModel.cs" />
     <Compile Include="DBHelper.cs" />
+    <Compile Include="JobListReader.cs" />
     <Compile Include="PdfViewer.xaml.cs">
       <DependentUpon>PdfViewer.xaml</DependentUpon>
     </Compile>

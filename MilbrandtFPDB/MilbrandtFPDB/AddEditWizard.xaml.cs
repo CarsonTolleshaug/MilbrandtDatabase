@@ -28,6 +28,10 @@ namespace MilbrandtFPDB
         {
             InitializeComponent();
 
+            // 
+            if (type == AddEditWizardType.Edit)
+                propertiesPanel.Style = null;
+
             _vm = new AddEditWizardViewModel(type, parentVM, entry);
             DataContext = _vm;
 
@@ -124,8 +128,19 @@ namespace MilbrandtFPDB
             bool? result = ofd.ShowDialog();
             if (result.HasValue && result.Value)
             {
-                _vm.FilePath = ofd.FileName;
-                _vm.AutofillFromFilePath();
+                if (sender == btnFilePathBrowse)
+                {
+                    _vm.FilePath = ofd.FileName;
+                }
+                else if (sender == btnFloorPlanBrowse)
+                {
+                    _vm.FloorPlanPath = ofd.FileName;
+                    _vm.AutofillFromFloorPlan();
+                }
+                else if (sender == btnElevationBrowse)
+                {
+                    _vm.ElevationPath = ofd.FileName;
+                }
             }
         }
 

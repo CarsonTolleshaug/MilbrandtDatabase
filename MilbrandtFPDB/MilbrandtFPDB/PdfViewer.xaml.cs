@@ -29,6 +29,8 @@ namespace MilbrandtFPDB
         {
             InitializeComponent();
             viewer = new PdfiumViewer.PdfViewer();
+            viewer.ShowBookmarks = false;
+            viewer.ZoomMode = PdfViewerZoomMode.FitBest;
 
             winFormsHost.Child = viewer;
         }
@@ -55,7 +57,7 @@ namespace MilbrandtFPDB
                 PdfDocument doc = PdfDocument.Load(filepath);
                 viewer.Document = doc;
 
-                viewer.ZoomMode = PdfViewerZoomMode.FitBest;
+                //viewer.Renderer.Zoom = ((double)viewer.Renderer.Width) / doc.PageSizes[0].Width;
             }            
         }
     }

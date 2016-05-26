@@ -50,3 +50,16 @@ D:\Documents\Visual Studio 2008\MilbrandtJobList\cwc\Milbrandt Job List\obj\x86\
 D:\Documents\Visual Studio 2008\MilbrandtJobList\cwc\Milbrandt Job List\obj\x86\Release\HyperlinkJobsList.LoadingBox.resources
 D:\Documents\Visual Studio 2008\MilbrandtJobList\cwc\Milbrandt Job List\obj\x86\Release\HyperlinkJobsList.Properties.Resources.resources
 D:\Documents\Visual Studio 2008\MilbrandtJobList\cwc\Milbrandt Job List\obj\x86\Release\Milbrandt Job List.csproj.GenerateResource.Cache
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\Interop.SHDocVw.dll
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\Milbrandt Job List.csproj.ResolveComReference.cache
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\Milbrandt Job List.exe
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\Milbrandt Job List.pdb
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\bin\x86\Release\Milbrandt Job List.exe
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\bin\x86\Release\Milbrandt Job List.pdb
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\bin\x86\Release\Interop.SHDocVw.dll
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\Milbrandt Job List.csprojResolveAssemblyReference.cache
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\HyperlinkJobsList.EditForm.resources
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\HyperlinkJobsList.Form1.resources
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\HyperlinkJobsList.LoadingBox.resources
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\HyperlinkJobsList.Properties.Resources.resources
+C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\obj\x86\Release\Milbrandt Job List.csproj.GenerateResource.Cache

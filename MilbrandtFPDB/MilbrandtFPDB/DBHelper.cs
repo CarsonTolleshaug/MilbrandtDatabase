@@ -12,6 +12,16 @@ namespace MilbrandtFPDB
 
     public static class DBHelper
     {
+        private static string plansRootDirectory = @"C:\Users\carso\Documents\Milbrandt\Plans";
+
+        public static string GetStandardPdfFilename(string projectNumber, string plan)
+        {
+            // Add underscore for single family
+            string typeStr = Type == DatabaseType.SingleFamily ? "Single_Family" : Type.ToString();
+
+            return Path.Combine(plansRootDirectory, typeStr, projectNumber, plan + ".pdf");
+        }
+
         private static string settingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FPDatabase"); //<- Defualt System Directory 
         //"C:/Program Files/FP Database";
         public static string settingsFile

@@ -115,6 +115,7 @@ namespace MilbrandtFPDB
             // Create ComboBox of available filter values
             ComboBox cb = new ComboBox();
             cb.SelectionChanged += FilterSelectionChanged;
+            cb.IsTabStop = false;
 
             // Set binding for ItemsSource
             Binding sourceBinding = new Binding("AvailableValues[" + header + "]");

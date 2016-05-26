@@ -20,12 +20,15 @@ namespace MilbrandtFPDB
         private DataGridViewModel _mainVM;
         private string _filepath;
 
+        // for add mode only
+        private string _floorPlanPath, _elevationPath;
+
         public AddEditWizardViewModel(AddEditWizardType type, DataGridViewModel mainVM, SitePlan entry)
         {
             _type = type;
             _mainVM = mainVM;
             _entry = type == AddEditWizardType.Edit ? entry : new SitePlan();
-            _filepath = "";
+            _filepath = _floorPlanPath = _elevationPath = "";
 
             InitializeValues();
         }
@@ -119,6 +122,40 @@ namespace MilbrandtFPDB
             }
         }
 
+        public string FloorPlanPath
+        {
+            get { return _floorPlanPath; }
+            set
+            {
+                if (_floorPlanPath != value)
+                {
+                    if (String.IsNullOrWhiteSpace(value))
+                        _floorPlanPath = "";
+                    else
+                        _floorPlanPath = value;
+
+                    OnPropertyChanged("FloorPlanPath");
+                }
+            }
+        }
+
+        public string ElevationPath
+        {
+            get { return _elevationPath; }
+            set
+            {
+                if (_elevationPath != value)
+                {
+                    if (String.IsNullOrWhiteSpace(value))
+                        _elevationPath = "";
+                    else
+                        _elevationPath = value;
+
+                    OnPropertyChanged("ElevationPath");
+                }
+            }
+        }
+
         public SitePlan Entry
         {
             get { return _entry; }
@@ -155,10 +192,15 @@ namespace MilbrandtFPDB
             if (Entry == null)
                 _entry = new SitePlan();
 
-            // Force FilePath to be filled in
-            if (String.IsNullOrWhiteSpace(FilePath))
+            if (WizardType == AddEditWizardType.Add)
             {
-                throw new ArgumentException(GetParameterDisplayName("FilePath") + " cannot be blank.");
+                BuildCompositePdfFromFloorPlanAndElevation();
+            }
+            else
+            {
+                // Force FilePath to be filled in
+                if (String.IsNullOrWhiteSpace(FilePath))
+                    throw new ArgumentException(GetParameterDisplayName("FilePath") + " cannot be blank.");
             }
 
             // Set the properties of the site plan object
@@ -176,18 +218,85 @@ namespace MilbrandtFPDB
             //Todo: tell _mainVM to save to file
         }
 
-        public void AutofillFromFilePath()
+        private void BuildCompositePdfFromFloorPlanAndElevation()
         {
-            if (String.IsNullOrWhiteSpace(FilePath))
+            #region Value Checking
+            // Force FloorPlanPath to be filled in
+            if (String.IsNullOrWhiteSpace(FloorPlanPath))
+                throw new ArgumentException("Floor Plan cannot be blank");
+                
+            // Force FloorPlanPath to exist
+            if (!File.Exists(FloorPlanPath))
+                throw new ArgumentException("Unable to find floor plan file");
+
+            // Force ElevationPath to exist if specified
+            if (!String.IsNullOrWhiteSpace(ElevationPath) && !File.Exists(ElevationPath))
+                throw new ArgumentException("Unable to find elevation file");
+
+            string projNum = PropertyValues["ProjectNumber"].Value;
+            string plan = PropertyValues["Plan"].Value;
+
+            // Force ProjectNumber to be specified
+            if (String.IsNullOrWhiteSpace(projNum))
+                throw new ArgumentException(_mainVM.ParameterDisplayNames["ProjectNumber"] + " cannot be blank");
+
+            // Force Plan to be specified
+            if (String.IsNullOrWhiteSpace(plan))
+                throw new ArgumentException(_mainVM.ParameterDisplayNames["Plan"] + " cannot be blank");
+            #endregion
+
+            // Set our file path to export to
+            FilePath = DBHelper.GetStandardPdfFilename(projNum, plan);
+            
+            // Create the parent folder if it does not exist
+            string parentDir = Directory.GetParent(FilePath).FullName;
+            if (!Directory.Exists(parentDir))
+                Directory.CreateDirectory(parentDir);
+
+            // Make sure FilePath does not already exist
+            for (int i = 0; File.Exists(FilePath); i++)
+                FilePath = DBHelper.GetStandardPdfFilename(projNum, plan + "_" + i);
+
+            if (String.IsNullOrWhiteSpace(ElevationPath))
+            {
+                // We simply copy the pdf to the new location
+                File.Copy(FloorPlanPath, FilePath);
+            }
+            else
+            {
+                // Create output doc
+                PdfSharp.Pdf.PdfDocument outputDoc = new PdfSharp.Pdf.PdfDocument();
+
+                // Add floor plan pages, then elevation pages
+                AddPagesFromFileToDoc(FloorPlanPath, outputDoc);
+                AddPagesFromFileToDoc(ElevationPath, outputDoc);
+
+                // Save the new combined document in the previously generated FilePath location
+                outputDoc.Save(FilePath);
+            }
+        }
+
+        private void AddPagesFromFileToDoc(string inputFilename, PdfSharp.Pdf.PdfDocument outputDoc)
+        {
+            PdfSharp.Pdf.PdfDocument inputDoc = PdfSharp.Pdf.IO.PdfReader.Open(inputFilename, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+            foreach (PdfSharp.Pdf.PdfPage page in inputDoc.Pages)
+                outputDoc.AddPage(page);
+        }
+
+        public void AutofillFromFloorPlan()
+        {
+            if (String.IsNullOrWhiteSpace(FloorPlanPath))
                 return;
 
             // Plan from filename
-            string plan = Path.GetFileNameWithoutExtension(FilePath);
+            string plan = Path.GetFileNameWithoutExtension(FloorPlanPath);
             SetPropertyIfEmpty("Plan", plan.Replace('_', ' '));
 
             // Project Number and Plan from path
-            string projNum = Directory.GetParent(FilePath).Name;
-            SetPropertyIfEmpty("ProjectNumber", projNum);
+            string projNum = Directory.GetParent(FloorPlanPath).Name;
+            int parsedVal;
+            if (int.TryParse(projNum, out parsedVal))
+                SetPropertyIfEmpty("ProjectNumber", projNum);
         }
 
         public void AutofillFromProjectNumber()
@@ -204,6 +313,16 @@ namespace MilbrandtFPDB
                 SetPropertyIfEmpty("ClientName", sitePlanWithSamePN.ClientName);
                 SetPropertyIfEmpty("Location", sitePlanWithSamePN.Location);
                 SetPropertyIfEmpty("Date", sitePlanWithSamePN.Date);
+            }
+            else
+            {
+                // Read from the Jobs list to try to autofill info
+                Dictionary<string, string> jobListInfo = JobListReader.GetJobInfo(projNum);
+                if (jobListInfo != null)
+                {
+                    SetPropertyIfEmpty("ProjectName", jobListInfo["ProjectName"]);
+                    SetPropertyIfEmpty("ClientName", jobListInfo["ClientName"]);
+                }
             }
         }
 
