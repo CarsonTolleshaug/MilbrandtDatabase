@@ -126,6 +126,7 @@ namespace MilbrandtFPDB
 
         private void SitePlanPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            RefreshDisplay();
             UpdateAvailableValues(e.PropertyName);
         }
 
@@ -136,6 +137,10 @@ namespace MilbrandtFPDB
             {
                 foreach (string pName in _availableValues.Keys)
                     UpdateAvailableValues(pName);
+                return;
+            }
+            else if (!_availableValues.Keys.Contains(propertyName))
+            {
                 return;
             }
 

@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Collections.ObjectModel;
+using System.IO;
+using Microsoft.Win32;
 
 namespace MilbrandtFPDB
 {
@@ -68,18 +70,49 @@ namespace MilbrandtFPDB
             sourceBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
             propCB.SetBinding(ComboBox.ItemsSourceProperty, sourceBinding);
 
-            // Set binding for SelectedItem
-            Binding selectBinding = new Binding("SelectedValues[" + propertyName + "].Value");
+            // Set binding for Text (SelectedItem)
+            Binding selectBinding = new Binding("PropertyValues[" + propertyName + "].Value");
             selectBinding.Source = _vm;
             selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
-            selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-            propCB.SetBinding(ComboBox.SelectedItemProperty, selectBinding);
+            selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.LostFocus;
+            propCB.SetBinding(ComboBox.TextProperty, selectBinding);
 
             // Add label and combo box to grid and return it
             grid.Children.Add(propLabel);
             grid.Children.Add(propCB);
 
             return grid;
+        }
+
+        private void btnBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "PDF files (*.pdf, *.pdfx)|*.pdf;*.pdfx|All files (*.*)|*.*";
+
+            bool? result = ofd.ShowDialog();
+            if (result.HasValue && result.Value)
+            {
+                _vm.FilePath = ofd.FileName;
+                _vm.AutofillFromFilePath();
+            }
+        }
+
+        private void btnSave_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _vm.Save();
+                this.DialogResult = true;
+                this.Close();
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable to save:\n" + ex.Message);
+            }
         }
     }
 }

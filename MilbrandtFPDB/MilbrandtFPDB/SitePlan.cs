@@ -196,6 +196,12 @@ namespace MilbrandtFPDB
             PropertyInfo pi = type.GetProperty(parameterName);
             return pi.GetValue(sitePlan).ToString();
         }
+        public static void SetParameter(SitePlan sitePlan, string parameterName, string value)
+        {
+            Type type = typeof(SitePlan);
+            PropertyInfo pi = type.GetProperty(parameterName);
+            pi.SetValue(sitePlan, value);
+        }
 
         public SitePlan(string projNumber, string projName, string clientName, string location, string plan, string width, string depth, string beds, string baths, string sqrft, string date, string linkPath)
         {
