@@ -21,14 +21,14 @@ namespace MilbrandtFPDB
         private string _filepath;
 
         // for add mode only
-        private string _floorPlanPath, _elevationPath;
+        private string _floorPlanPath;
 
         public AddEditWizardViewModel(AddEditWizardType type, DataGridViewModel mainVM, SitePlan entry)
         {
             _type = type;
             _mainVM = mainVM;
             _entry = type == AddEditWizardType.Edit ? entry : new SitePlan();
-            _filepath = _floorPlanPath = _elevationPath = "";
+            _filepath = _floorPlanPath = "";
 
             InitializeValues();
         }
@@ -70,6 +70,9 @@ namespace MilbrandtFPDB
                         PropertyValues[property].PropertyChanged += ProjectNumberChanged;
                 }
             }
+
+            // Elevation Paths
+            ElevationPaths = new ObservableCollection<KeyValueWrapper>();
         }
 
         private void ProjectNumberChanged(object sender, PropertyChangedEventArgs e)
@@ -139,21 +142,10 @@ namespace MilbrandtFPDB
             }
         }
 
-        public string ElevationPath
+        public ObservableCollection<KeyValueWrapper> ElevationPaths
         {
-            get { return _elevationPath; }
-            set
-            {
-                if (_elevationPath != value)
-                {
-                    if (String.IsNullOrWhiteSpace(value))
-                        _elevationPath = "";
-                    else
-                        _elevationPath = value;
-
-                    OnPropertyChanged("ElevationPath");
-                }
-            }
+            get;
+            private set;
         }
 
         public SitePlan Entry
@@ -229,9 +221,17 @@ namespace MilbrandtFPDB
             if (!File.Exists(FloorPlanPath))
                 throw new ArgumentException("Unable to find floor plan file");
 
-            // Force ElevationPath to exist if specified
-            if (!String.IsNullOrWhiteSpace(ElevationPath) && !File.Exists(ElevationPath))
-                throw new ArgumentException("Unable to find elevation file");
+            // Force Elevation paths to exist if specified
+            bool hasElevations = false;
+            foreach (KeyValueWrapper elevationPath in ElevationPaths)
+            {
+                if (!String.IsNullOrWhiteSpace(elevationPath.Value))
+                {
+                    hasElevations = true;
+                    if (!File.Exists(elevationPath.Value))
+                        throw new ArgumentException("Unable to find elevation file:\n" + elevationPath.Value);
+                }
+            }
 
             string projNum = PropertyValues["ProjectNumber"].Value;
             string plan = PropertyValues["Plan"].Value;
@@ -257,7 +257,7 @@ namespace MilbrandtFPDB
             for (int i = 0; File.Exists(FilePath); i++)
                 FilePath = DBHelper.GetStandardPdfFilename(projNum, plan + "_" + i);
 
-            if (String.IsNullOrWhiteSpace(ElevationPath))
+            if (!hasElevations)
             {
                 // We simply copy the pdf to the new location
                 File.Copy(FloorPlanPath, FilePath);
@@ -267,9 +267,15 @@ namespace MilbrandtFPDB
                 // Create output doc
                 PdfSharp.Pdf.PdfDocument outputDoc = new PdfSharp.Pdf.PdfDocument();
 
-                // Add floor plan pages, then elevation pages
+                // Add floor plan pages
                 AddPagesFromFileToDoc(FloorPlanPath, outputDoc);
-                AddPagesFromFileToDoc(ElevationPath, outputDoc);
+                
+                // Add elevations
+                foreach (KeyValueWrapper elevationPath in ElevationPaths)
+                {
+                    if (!String.IsNullOrWhiteSpace(elevationPath.Value))
+                        AddPagesFromFileToDoc(elevationPath.Value, outputDoc);
+                }
 
                 // Save the new combined document in the previously generated FilePath location
                 outputDoc.Save(FilePath);

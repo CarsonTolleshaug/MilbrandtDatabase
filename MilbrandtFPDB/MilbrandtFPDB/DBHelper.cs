@@ -12,7 +12,8 @@ namespace MilbrandtFPDB
 
     public static class DBHelper
     {
-        private static string plansRootDirectory = @"C:\Users\carso\Documents\Milbrandt\Plans";
+        //private static string plansRootDirectory = @"C:\Users\carso\Documents\Milbrandt\Plans";
+        private static string plansRootDirectory = @"D:\Documents\Milbrandt Projects\Plans";
 
         public static string GetStandardPdfFilename(string projectNumber, string plan)
         {

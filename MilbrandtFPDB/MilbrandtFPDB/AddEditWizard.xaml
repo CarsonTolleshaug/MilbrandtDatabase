@@ -1,12 +1,12 @@
 ﻿<Window x:Class="MilbrandtFPDB.AddEditWizard"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Entry Wizard" Height="520" Width="440" ResizeMode="CanMinimize" WindowStyle="ToolWindow" Background="White">
+        Title="Entry Wizard" Height="Auto" Width="440" ResizeMode="CanMinimize" WindowStyle="ToolWindow" Background="White" SizeToContent="Height">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
-            <RowDefinition Height="60" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
@@ -58,22 +58,24 @@
             </Grid.Style>
             
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="114" />
+                <ColumnDefinition Width="75" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="110" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="30" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="30" />
             </Grid.RowDefinitions>
             
-            <Label Content="Floor Plan" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            <Label Content="Floor Plan" HorizontalAlignment="Left" VerticalAlignment="Center" />
             <TextBox x:Name="txtFloorPlanPath" Grid.Column="1" Text="{Binding Path=FloorPlanPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1"/>
             <Button x:Name="btnFloorPlanBrowse" Content="Browse..." Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" Click="btnBrowse_Click"/>
 
-            <Label Content="Elevation (optional)" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" />
-            <TextBox x:Name="txtElevationPath" Grid.Row="1" Grid.Column="1" Text="{Binding Path=ElevationPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1"/>
-            <Button x:Name="btnElevationBrowse" Content="Browse..." Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" Click="btnBrowse_Click"/>
+            <StackPanel x:Name="elevationsPanel" Orientation="Vertical" Grid.Row="1" Grid.ColumnSpan="3" >         
+            </StackPanel>
+            
+            <Button x:Name="btnAddElevation" Content="Add Elevation" Grid.ColumnSpan="3" Grid.Row="2" VerticalAlignment="Center" Margin="35,0,35,0" Click="btnAddElevation_Click" />
         </Grid>
 
         <StackPanel x:Name="propertiesPanel" Grid.Row="2" Orientation="Vertical" Margin="10,10,10,0">

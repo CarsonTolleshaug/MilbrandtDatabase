@@ -80,8 +80,8 @@ namespace MilbrandtFPDB
             if (refreshLists)
             {
                 // update all available values
-                UpdateAvailableValues();
                 RefreshDisplay();
+                UpdateAvailableValues();
             }
         }
 
@@ -89,10 +89,11 @@ namespace MilbrandtFPDB
         {
             if (entries.Remove(sp))
             {
-                // update all available values
-                UpdateAvailableValues();
-
                 DisplayedEntries.Remove(sp);
+
+                // update all available values
+                //UpdateAvailableValues();
+                //RefreshDisplay();
             }
         }
 

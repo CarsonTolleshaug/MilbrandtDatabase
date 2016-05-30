@@ -137,9 +137,10 @@ namespace MilbrandtFPDB
                     _vm.FloorPlanPath = ofd.FileName;
                     _vm.AutofillFromFloorPlan();
                 }
-                else if (sender == btnElevationBrowse)
+                else
                 {
-                    _vm.ElevationPath = ofd.FileName;
+                    int index = (int)((sender as Button).Tag);
+                    _vm.ElevationPaths[index].Value = ofd.FileName;
                 }
             }
         }
@@ -160,6 +161,104 @@ namespace MilbrandtFPDB
             {
                 MessageBox.Show("Unable to save:\n" + ex.Message);
             }
+        }
+
+        private void btnAddElevation_Click(object sender, RoutedEventArgs e)
+        {
+            // Create UI Element, link to vm, and add to stack panel
+            
+            // the index of new elevation
+            int index; 
+            for (index = 0; index < _vm.ElevationPaths.Count && _vm.ElevationPaths[index].Value != null; index++);
+
+            // Max out at 26 elevations
+            if (index >= 26)
+                return;
+
+            if (index == _vm.ElevationPaths.Count)
+            {
+                // Add value to vm
+                _vm.ElevationPaths.Add(new KeyValueWrapper(index.ToString(), ""));
+            }
+            else
+            {
+                _vm.ElevationPaths[index].Value = "";
+            }
+
+            // Root element
+            Grid grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(75, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(80, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(30, GridUnitType.Pixel) });
+            grid.Tag = index;
+
+            // Label
+            Label label = new Label();
+            label.Content = "Elevation " + (char)('A' + index);
+            label.VerticalAlignment = System.Windows.VerticalAlignment.Center;
+
+            // Textbox
+            TextBox tb = new TextBox();
+            tb.Padding = new Thickness(1);
+            tb.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
+            tb.VerticalAlignment = System.Windows.VerticalAlignment.Center;
+            tb.SetValue(Grid.ColumnProperty, 1);
+            // binding
+            Binding textBinding = new Binding("ElevationPaths[" + index + "].Value");
+            textBinding.Mode = BindingMode.TwoWay;
+            tb.SetBinding(TextBox.TextProperty, textBinding);
+
+            // Browse Button
+            Button btn = new Button();
+            btn.Content = "Browse...";
+            btn.Click += btnBrowse_Click;
+            btn.Margin = new Thickness(5, 0, 5, 0);
+            btn.Tag = index;
+            btn.SetValue(Grid.ColumnProperty, 2);
+            btn.VerticalAlignment = System.Windows.VerticalAlignment.Center;
+
+            // Remove Button
+            Button removeBtn = new Button();
+            removeBtn.Content = "X";
+            removeBtn.Click += removeBtn_Click;
+            removeBtn.Margin = new Thickness(0, 0, 5, 0);
+            removeBtn.Tag = index;
+            removeBtn.SetValue(Grid.ColumnProperty, 3);
+            removeBtn.VerticalAlignment = System.Windows.VerticalAlignment.Center;
+
+            // Add Label, Textbox, and Buttons to grid
+            grid.Children.Add(label);
+            grid.Children.Add(tb);
+            grid.Children.Add(btn);
+            grid.Children.Add(removeBtn);
+
+            // Add grid to stack panel
+            elevationsPanel.Children.Insert(index, grid);
+        }
+
+        private void removeBtn_Click(object sender, RoutedEventArgs e)
+        {
+            // Get index from button's tag
+            int index = (int)(sender as Button).Tag;
+            
+            // Clear the path value so it isn't used
+            _vm.ElevationPaths[index].Value = null;
+
+            // Find the parent grid and remove it from the stack panel
+            foreach(UIElement child in elevationsPanel.Children)
+            {
+                Grid grid = (child as Grid);
+                int? tag = grid == null ? null : (grid.Tag as int?);
+                if (tag.HasValue && tag.Value == index)
+                {
+                    elevationsPanel.Children.Remove(child);
+
+                    // return so we don't get an exception for modifying the collection
+                    return; 
+                }
+            }
+
         }
     }
 }
