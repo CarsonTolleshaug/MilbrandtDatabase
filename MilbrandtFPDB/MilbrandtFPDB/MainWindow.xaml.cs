@@ -166,9 +166,13 @@ namespace MilbrandtFPDB
                 wizard = new AddEditWizard(type, _vm, (SitePlan)dgSitePlans.SelectedItem);
             }
 
-            bool? result = wizard.ShowDialog();
+            wizard.ShowDialog();
+        }
 
-            // TODO: save if result is good
+        private void btnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.ShowDialog();
         }
 
     }

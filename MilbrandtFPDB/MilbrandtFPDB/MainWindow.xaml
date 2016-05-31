@@ -51,6 +51,9 @@
         <MilbrandtFPDB:PdfViewer x:Name="pdfViewer" Grid.Column="2" Visibility="Hidden" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
         <Button x:Name="btnOpen" Grid.Column="2" Grid.Row="1" Content="Open PDF" IsEnabled="False" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center" Click="btnOpen_Click"/>
-        
+
+        <Button x:Name="btnSettings" Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0" Click="btnSettings_Click">
+            <Image Width="20" Height="20" Source="Resources/settings_icon.png" Opacity="0.6" />
+        </Button>
     </Grid>
 </Window>

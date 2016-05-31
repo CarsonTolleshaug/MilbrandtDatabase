@@ -12,26 +12,15 @@ namespace MilbrandtFPDB
 
     public static class DBHelper
     {
-        //private static string plansRootDirectory = @"C:\Users\carso\Documents\Milbrandt\Plans";
-        private static string plansRootDirectory = @"D:\Documents\Milbrandt Projects\Plans";
 
         public static string GetStandardPdfFilename(string projectNumber, string plan)
         {
             // Add underscore for single family
             string typeStr = Type == DatabaseType.SingleFamily ? "Single_Family" : Type.ToString();
 
-            return Path.Combine(plansRootDirectory, typeStr, projectNumber, plan + ".pdf");
+            return Path.Combine(Settings.PlansRootDirectory, typeStr, projectNumber, plan + ".pdf");
         }
 
-        private static string settingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FPDatabase"); //<- Defualt System Directory 
-        //"C:/Program Files/FP Database";
-        public static string settingsFile
-        {
-            get
-            {
-                return Path.Combine(settingsDirectory, "layout.settings");
-            }
-        }
         private static string dataFile;
 
         private static DatabaseType dbType;
@@ -71,18 +60,7 @@ namespace MilbrandtFPDB
             sw.Close();
         }
 
-        public static void WriteLayout(string[] settings)
-        {
-            if (!Directory.Exists(settingsDirectory))
-                Directory.CreateDirectory(settingsDirectory);
-
-            StreamWriter sw = new StreamWriter(settingsFile, false);
-
-            foreach (string s in settings)
-                sw.WriteLine(s);
-
-            sw.Close();
-        }
+        
 
         public static List<SitePlan> Read()
         {
@@ -107,28 +85,6 @@ namespace MilbrandtFPDB
             }
 
             return retval;
-        }
-
-        public static string[] ReadLayout()
-        {
-            List<string> retval = new List<string>();
-
-            if (File.Exists(settingsFile))
-            {
-                StreamReader sr = new StreamReader(settingsFile);
-
-                while (!sr.EndOfStream)
-                    retval.Add(sr.ReadLine());
-
-                sr.Close();
-            }
-
-            //if its an old settings file:
-            //100 is default width of the last colomn
-            if (retval.Count == 18)
-                retval.Add("100");
-
-            return retval.ToArray();
         }
 
         static public string WriteProjectNumber(string pn)

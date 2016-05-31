@@ -9,13 +9,11 @@ namespace MilbrandtFPDB
 {
     public static class JobListReader
     {
-        public static string JobListFile = @"C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\bin\x86\Release\jobs.dat";
-
         public static Dictionary<string, string> GetJobInfo(string projectNumber)
         {            
-            if (File.Exists(JobListFile))
+            if (File.Exists(Settings.JobListFile))
             {
-                StreamReader sr = new StreamReader(JobListFile);
+                StreamReader sr = new StreamReader(Settings.JobListFile);
 
                 while (!sr.EndOfStream)
                 {
