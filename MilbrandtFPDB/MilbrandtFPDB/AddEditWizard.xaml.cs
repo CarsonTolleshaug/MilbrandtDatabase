@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 using System.IO;
 using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace MilbrandtFPDB
 {
@@ -28,12 +29,17 @@ namespace MilbrandtFPDB
         {
             InitializeComponent();
 
-            // 
-            if (type == AddEditWizardType.Edit)
-                propertiesPanel.Style = null;
-
             _vm = new AddEditWizardViewModel(type, parentVM, entry);
+            _vm.PropertyChanged += VMPropertyChanged;
             DataContext = _vm;
+
+            if (type == AddEditWizardType.Edit)
+            {
+                // Prevent the properties panel from being disabled 
+                // due to floor plan being blank
+                propertiesPanel.Style = null;
+                UpdatePdfViewer(_vm.FilePath);
+            }
 
             InitializeUI();
         }
@@ -49,6 +55,26 @@ namespace MilbrandtFPDB
             }
         }
 
+        private void VMPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "FilePath")
+                UpdatePdfViewer(_vm.FilePath);
+            else if (e.PropertyName == "FloorPlanPath")
+                UpdatePdfViewer(_vm.FloorPlanPath);
+        }
+
+        private void UpdatePdfViewer(string path)
+        {
+            try
+            {
+                pdfViewer.PdfFilePath = path;
+            }
+            catch
+            {
+                pdfViewer.PdfFilePath = "";
+            }
+        }
+
         private UIElement GenerateElement(string propertyName)
         {
             // Create grid to be our root element
@@ -58,8 +84,9 @@ namespace MilbrandtFPDB
             grid.Margin = new System.Windows.Thickness(0, 0, 20, 4);
 
             // Create label on left side to show property name
-            Label propLabel = new Label();
-            propLabel.Content = _vm.GetParameterDisplayName(propertyName);
+            TextBlock propLabel = new TextBlock();
+            propLabel.Text = _vm.GetParameterDisplayName(propertyName);
+            propLabel.TextTrimming = TextTrimming.CharacterEllipsis;
             propLabel.Margin = new Thickness(0, 0, 10, 0);
             propLabel.VerticalAlignment = System.Windows.VerticalAlignment.Center;
             propLabel.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
@@ -130,7 +157,7 @@ namespace MilbrandtFPDB
             {
                 if (sender == btnFilePathBrowse)
                 {
-                    _vm.FilePath = ofd.FileName;
+                    _vm.FilePath = ofd.FileName;                    
                 }
                 else if (sender == btnFloorPlanBrowse)
                 {
@@ -187,15 +214,15 @@ namespace MilbrandtFPDB
 
             // Root element
             Grid grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(75, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(65, GridUnitType.Pixel) });
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(80, GridUnitType.Pixel) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(30, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(35, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(25, GridUnitType.Pixel) });
             grid.Tag = index;
 
             // Label
             Label label = new Label();
-            label.Content = "Elevation " + (char)('A' + index);
+            label.Content = "File " + (index + 2); // start at "File 2"
             label.VerticalAlignment = System.Windows.VerticalAlignment.Center;
 
             // Textbox
@@ -211,7 +238,7 @@ namespace MilbrandtFPDB
 
             // Browse Button
             Button btn = new Button();
-            btn.Content = "Browse...";
+            btn.Content = "...";
             btn.Click += btnBrowse_Click;
             btn.Margin = new Thickness(5, 0, 5, 0);
             btn.Tag = index;
@@ -259,6 +286,14 @@ namespace MilbrandtFPDB
                 }
             }
 
+        }
+
+        private void btnOpenPDF_Click(object sender, RoutedEventArgs e)
+        {
+            // Open the PDF in Acrobat
+            Process open = new Process();
+            open.StartInfo = new ProcessStartInfo(_vm.FilePath);
+            open.Start();
         }
     }
 }

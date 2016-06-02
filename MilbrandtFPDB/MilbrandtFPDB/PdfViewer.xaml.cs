@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using PdfiumViewer;
+//using Patagames.Pdf;
 
 namespace MilbrandtFPDB
 {
@@ -24,15 +25,33 @@ namespace MilbrandtFPDB
     {
         private string _pdfFilePath;
         PdfiumViewer.PdfViewer viewer;
+        //Patagames.Pdf.Net.Controls.Wpf.PdfViewer viewer;
 
         public PdfViewer()
         {
             InitializeComponent();
+            //Patagames.Pdf.Net.PdfCommon.Initialize();
+
+            //viewer = new Patagames.Pdf.Net.Controls.Wpf.PdfViewer();
+            //viewer.VerticalAlignment = System.Windows.VerticalAlignment.Stretch;
+            //mGrid.Children.Add(viewer);
+
             viewer = new PdfiumViewer.PdfViewer();
             viewer.ShowBookmarks = false;
-            viewer.ZoomMode = PdfViewerZoomMode.FitBest;
-
+            ZoomMode = PdfViewerZoomMode.FitBest;
             winFormsHost.Child = viewer;
+        }
+
+        public PdfViewerZoomMode ZoomMode
+        {
+            get { return viewer.ZoomMode; }
+            set { viewer.ZoomMode = value; }
+        }
+
+        public double Zoom
+        {
+            get { return viewer.Renderer.Zoom; }
+            set { viewer.Renderer.Zoom = value; }
         }
 
         public string PdfFilePath
@@ -56,9 +75,16 @@ namespace MilbrandtFPDB
             {
                 PdfDocument doc = PdfDocument.Load(filepath);
                 viewer.Document = doc;
+                winFormsHost.Visibility = System.Windows.Visibility.Visible;
 
-                //viewer.Renderer.Zoom = ((double)viewer.Renderer.Width) / doc.PageSizes[0].Width;
+                //viewer.LoadDocument(filepath);
+                //viewer.Visibility = System.Windows.Visibility.Visible;
             }            
+            else
+            {
+                winFormsHost.Visibility = System.Windows.Visibility.Hidden;
+                //viewer.Visibility = System.Windows.Visibility.Hidden;
+            }
         }
     }
 }

@@ -16,17 +16,19 @@ namespace MilbrandtFPDB
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private string _projNum, _projName, _clientName, _location, _plan, _width, _depth, _beds, _baths, _sqft, _date, _filePath;
+        private string _projNum, _projName, _clientName, _location, _type, _plan, _width, _depth, _beds, _baths, _sqft, _filePath;
+        private DateTime _date;
 
 
         #region Properties
-        // NOTE: Add new params here
 
         internal static SortMethod Sort
         {
             get;
             set;
         }
+
+        // NOTE: Add new params here
 
         public string ProjectNumber
         {
@@ -73,6 +75,18 @@ namespace MilbrandtFPDB
                 {
                     _location = value;
                     OnProperyChanged("Location");
+                }
+            }
+        }
+        public string Type
+        {
+            get { return _type; }
+            set
+            {
+                if (_type != value)
+                {
+                    _type = value;
+                    OnProperyChanged("Type");
                 }
             }
         }
@@ -148,7 +162,7 @@ namespace MilbrandtFPDB
                 }
             }
         }
-        public string Date
+        public DateTime Date
         {
             get { return _date; }
             set 
@@ -172,6 +186,7 @@ namespace MilbrandtFPDB
                 }
             }
         }
+
         #endregion
 
         private static List<string> _parameters;
@@ -192,37 +207,49 @@ namespace MilbrandtFPDB
         }
         public static string GetParameter(SitePlan sitePlan, string parameterName)
         {
+            if (parameterName == "Date")
+                return sitePlan.Date.ToShortDateString();
+
             Type type = typeof(SitePlan);
             PropertyInfo pi = type.GetProperty(parameterName);
             return pi.GetValue(sitePlan).ToString();
         }
         public static void SetParameter(SitePlan sitePlan, string parameterName, string value)
         {
-            Type type = typeof(SitePlan);
-            PropertyInfo pi = type.GetProperty(parameterName);
-            pi.SetValue(sitePlan, value);
+            if (parameterName == "Date")
+                sitePlan.Date = DateTime.Parse(value);
+            else
+            {
+                Type type = typeof(SitePlan);
+                PropertyInfo pi = type.GetProperty(parameterName);
+                pi.SetValue(sitePlan, value);
+            }
         }
 
-        public SitePlan(string projNumber, string projName, string clientName, string location, string plan, string width, string depth, string beds, string baths, string sqrft, string date, string linkPath)
+        public SitePlan(string projNumber, string projName, string clientName, string location, string type, string plan, string width, string depth, string beds, string baths, string sqrft, string date, string linkPath)
         {
+            // Add new params here
             this.ProjectNumber = projNumber;
             this.ProjectName = projName;
             this.ClientName = clientName;
             this.Location = location;
+            this.Type = type;
             this.Plan = plan;
             this.Width = width;
             this.Depth = depth;
             this.Beds = beds;
             this.Baths = baths;
             this.SquareFeet = sqrft;
-            this.Date = date;
+            this.Date = DateTime.Parse(date);
             this.FilePath = linkPath;
         }
         public SitePlan() //Constructor for creating new entries
         {
+            // Add new params here
             this.ProjectName = "New Plan Reference";
-            this.ClientName = this.Location = this.Plan =
-                this.FilePath = this.Date = "";
+            this.ClientName = this.Location = this.Type = this.Plan =
+                this.FilePath = "";
+            this.Date = DateTime.Now;
             this.ProjectNumber = this.Beds = this.Baths =
                 this.SquareFeet = this.Width = this.Depth = "0";
         }
@@ -236,6 +263,14 @@ namespace MilbrandtFPDB
             Process open = new Process();
             open.StartInfo = new ProcessStartInfo(FilePath);
             open.Start();
+        }
+
+        public double GetSquareFeetValue()
+        {
+            double temp;
+            if (double.TryParse(SquareFeet, out temp))
+                return temp;
+            return 0;
         }
 
         /// <summary>
@@ -306,13 +341,13 @@ namespace MilbrandtFPDB
             DateTime dateB;
             try
             {
-                dString = this.Date.Split("/".ToCharArray(), 3);
+                dString = this.Date.ToShortDateString().Split("/".ToCharArray(), 3);
                 dateA = new DateTime(int.Parse(dString[2]), int.Parse(dString[0]), int.Parse(dString[1]));
             }
             catch { return 1; }
             try
             {
-                dString = sp.Date.Split("/".ToCharArray(), 3);
+                dString = sp.Date.ToShortDateString().Split("/".ToCharArray(), 3);
                 dateB = new DateTime(int.Parse(dString[2]), int.Parse(dString[0]), int.Parse(dString[1]));
             }
             catch { return -1; }

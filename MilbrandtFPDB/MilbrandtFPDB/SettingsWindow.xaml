@@ -1,31 +1,39 @@
 ﻿<Window x:Class="MilbrandtFPDB.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Settings" Height="Auto" Width="Auto" SizeToContent="WidthAndHeight" ScrollViewer.CanContentScroll="True" ResizeMode="CanMinimize" WindowStyle="ToolWindow">
-    <StackPanel Orientation="Vertical">
+        Title="Settings" Height="Auto" Width="800" MinHeight="217" MinWidth="250" SizeToContent="Height" ScrollViewer.CanContentScroll="True" WindowStyle="ToolWindow">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid Margin="5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="250" />
-                <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="95" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="35" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MinHeight="50" />
+                <RowDefinition Height="*" MinHeight="50" />
+                <RowDefinition Height="*" MinHeight="50" />
             </Grid.RowDefinitions>
-        
-        
-            <Label Content="Saved Plans Directory" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" />
-            <TextBox Text="{Binding Path=PlansDirectory, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-            <Button x:Name="btnBrowsePlansDir" Content="Browse..." Grid.Column="3" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Click="btnBrowsePlansDir_Click" />
 
-            <Label Content="Job List File" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" />
+
+            <TextBlock Text="Saved Plans Directory" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
+            <TextBox Text="{Binding Path=PlansDirectory, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+            <Button x:Name="btnBrowsePlansDir" Content="..." Grid.Column="2" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="5" Click="btnBrowsePlansDir_Click" />
+
+            <TextBlock Text="Job List File" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
             <TextBox Text="{Binding Path=JobsListFile, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-            <Button x:Name="btnBrowseJobsFile" Content="Browse..." Grid.Column="3" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Click="btnBrowseJobsFile_Click" />
+            <Button x:Name="btnBrowseJobsFile" Content="..." Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="5" Click="btnBrowseJobsFile_Click" />
+            
+            <TextBlock Text="Sqare Ft. Range Step Value" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
+            <TextBox Text="{Binding Path=SqftRangeStep, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Width="80" />
+            
         </Grid>
         
-        <Grid Margin="5">
+        <Grid Margin="5" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -34,5 +42,5 @@
             <Button x:Name="btnCancel" Content="Cancel" Grid.Column="0" Width="100" HorizontalAlignment="Center" IsCancel="True"/>
             <Button x:Name="btnSave" Content="Save" Grid.Column="1" Width="100" HorizontalAlignment="Center" Click="btnSave_Click" />
         </Grid>
-    </StackPanel>
+    </Grid>
 </Window>

@@ -30,9 +30,8 @@ namespace MilbrandtFPDB
         }
         
         private static string plansRootDirectory = @"C:\Users\carso\Documents\Milbrandt\Plans";
-        //private static string plansRootDirectory = @"D:\Documents\Milbrandt Projects\Plans";
         private static string jobListFile = @"C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\bin\x86\Release\jobs.dat";
-
+        private static int sqftRangeStep = 250;
         private static bool initialized = ReadSettings();
 
         public static string PlansRootDirectory
@@ -59,6 +58,18 @@ namespace MilbrandtFPDB
             }
         }
 
+        public static int SqftRangeStep
+        {
+            get { return sqftRangeStep; }
+            set
+            {
+                if (value > 0)
+                {
+                    sqftRangeStep = value;
+                }
+            }
+        }
+
         public static void SaveSettings()
         {
             if (!Directory.Exists(SettingsDirectory))
@@ -72,6 +83,7 @@ namespace MilbrandtFPDB
                 // Settings
                 writer.WriteElementString("PlansRootDirectory", PlansRootDirectory);
                 writer.WriteElementString("JobListFile", JobListFile);
+                writer.WriteElementString("SqftRangeStep", SqftRangeStep.ToString());
 
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
@@ -89,6 +101,7 @@ namespace MilbrandtFPDB
                 // Settings
                 PlansRootDirectory = ReadValue("PlansRootDirectory", root);
                 JobListFile = ReadValue("JobListFile", root);
+                SqftRangeStep = ReadInt("SqftRangeStep", root);
             }
 
             return true;
@@ -118,6 +131,14 @@ namespace MilbrandtFPDB
                 return "";
 
             return elm.Value;
+        }
+
+        private static int ReadInt(string name, XElement root)
+        {
+            int temp;
+            if (int.TryParse(ReadValue(name, root), out temp))
+                return temp;
+            return 0;
         }
     }
 }

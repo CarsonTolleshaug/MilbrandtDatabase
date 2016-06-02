@@ -53,6 +53,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>
+    </ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="PdfiumViewer">
       <HintPath>..\packages\PdfiumViewer.2.9.0.0\lib\net20\PdfiumViewer.dll</HintPath>
@@ -178,6 +182,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\settings_icon.png" />
+    <Resource Include="Resources\db_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\open_icon.png" />
     <Content Include="x64\pdfium.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

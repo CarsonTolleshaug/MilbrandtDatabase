@@ -6,6 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid x:Name="mGrid">
-        <WindowsFormsHost x:Name="winFormsHost" />
+        <Label Content="Preview Unavailable" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+        <WindowsFormsHost x:Name="winFormsHost" Visibility="Hidden" />
     </Grid>
 </UserControl>

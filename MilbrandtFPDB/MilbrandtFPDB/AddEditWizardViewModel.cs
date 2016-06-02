@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MilbrandtFPDB
 {
@@ -186,6 +187,7 @@ namespace MilbrandtFPDB
 
             if (WizardType == AddEditWizardType.Add)
             {
+                // This may throw exceptions which are intentionally uncaught here
                 BuildCompositePdfFromFloorPlanAndElevation();
             }
             else
@@ -294,15 +296,62 @@ namespace MilbrandtFPDB
             if (String.IsNullOrWhiteSpace(FloorPlanPath))
                 return;
 
-            // Plan from filename
-            string plan = Path.GetFileNameWithoutExtension(FloorPlanPath);
-            SetPropertyIfEmpty("Plan", plan.Replace('_', ' '));
+            // ************************* Plan from filename ************************** //
+            string filename = Path.GetFileNameWithoutExtension(FloorPlanPath);
+            // If the filename contains the word "plan", collect digits after the plan (and after any whitespace after "plan").
+            // If it does not contain "plan", collect any section of 4 digits.
+            // Lastly, after the digits find the first instance of "DL","DB", or ".2" which may be preceded by any 
+            // non-alphanumeric character (including underscore) and may have alphanumeric characters in between it and the 
+            // digits so long as there is a non-alphanumeric separater before the suffix 
+            // [Ex: "A10 Plan 4F (DL)" will match "4" as the digits and "DL" as the suffix]
+            Match m = Regex.Match(filename, @"(?(.*Plan\s*\d+)(?:.*Plan\s*)(?<digits>\d+)|(?:.*)(?<digits>\d{4}))(?:(?:.*?[\W_]+)*?(?<suffix>DL|DB|\.2))?", RegexOptions.IgnoreCase);
+            string digits = m.Groups["digits"] == null? "" : m.Groups["digits"].Value;
+            string suffix = m.Groups["suffix"] == null? "" : m.Groups["suffix"].Value;
+            StringBuilder plan = new StringBuilder();
+            if (digits.Length > 0)
+            {
+                if (digits.Length < 4)
+                    plan.Append("Plan ");
+                plan.Append(digits);
+                if (suffix.Length > 0)
+                {
+                    // always append DL (instead of DB or .2)
+                    plan.Append(" DL");
+                }
+            }
+            SetPropertyIfEmpty("Plan", plan.ToString());
+            // *********************************************************************** //
 
-            // Project Number and Plan from path
-            string projNum = Directory.GetParent(FloorPlanPath).Name;
-            int parsedVal;
-            if (int.TryParse(projNum, out parsedVal))
-                SetPropertyIfEmpty("ProjectNumber", projNum);
+
+            // ************************** Width from filename ************************ //
+            if (digits.Length == 4)
+            {
+                // width is the first two values
+                string width = string.Format("{0}\'-0\"", digits.Substring(0, 2));
+                SetPropertyIfEmpty("Width", width);
+            }
+            // *********************************************************************** //
+
+
+            // ********************* Date from file modified time ******************** //
+            try
+            {
+                DateTime lastModified = File.GetLastWriteTime(FloorPlanPath);
+                SetPropertyIfEmpty("Date", lastModified.ToShortDateString());
+            }
+            catch { }
+            // *********************************************************************** //
+
+
+            // ********************** Project Number from path *********************** //
+            try
+            {
+                // get first 4 chars of the first directory after the drive
+                string projNum = FloorPlanPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[1];
+                SetPropertyIfEmpty("ProjectNumber", projNum.Substring(0, 4));
+            }
+            catch { }
+            // *********************************************************************** //
         }
 
         public void AutofillFromProjectNumber()
@@ -318,7 +367,7 @@ namespace MilbrandtFPDB
                 SetPropertyIfEmpty("ProjectName", sitePlanWithSamePN.ProjectName);
                 SetPropertyIfEmpty("ClientName", sitePlanWithSamePN.ClientName);
                 SetPropertyIfEmpty("Location", sitePlanWithSamePN.Location);
-                SetPropertyIfEmpty("Date", sitePlanWithSamePN.Date);
+                SetPropertyIfEmpty("Date", sitePlanWithSamePN.Date.ToShortDateString());
             }
             else
             {

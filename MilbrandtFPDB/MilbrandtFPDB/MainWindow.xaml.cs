@@ -33,15 +33,7 @@ namespace MilbrandtFPDB
 
         private void UpdatePreview(string file)
         {
-            if (String.IsNullOrWhiteSpace(file) || !File.Exists(file))
-            {
-                pdfViewer.Visibility = System.Windows.Visibility.Hidden;
-            }
-            else
-            {
-                pdfViewer.Visibility = System.Windows.Visibility.Visible;
-                pdfViewer.PdfFilePath = file;
-            }
+            pdfViewer.PdfFilePath = file;
         }
 
         private void dgSitePlans_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -56,7 +48,7 @@ namespace MilbrandtFPDB
             {
                 UpdatePreview((dgSitePlans.SelectedItem as SitePlan).FilePath);
             }
-            catch
+            catch (Exception ex)
             {
                 UpdatePreview(null);
             }
@@ -98,11 +90,18 @@ namespace MilbrandtFPDB
         {
             string header = e.PropertyName;
 
-            // FilePath does not need a filter header
+            // FilePath should not have a column
             if (header == "FilePath")
             {
-                e.Column.Header = _vm.ParameterDisplayNames[header];
+                e.Cancel = true;
                 return;
+            }
+
+            if (header == "Date")
+            {
+                DataGridTextColumn newCol = new DataGridTextColumn();
+                newCol.Binding = new Binding("Date") { StringFormat = "{0:dd/MM/yyyy}" };
+                e.Column = newCol;
             }
 
             // Create the header (which is contained in a vertical stack panel)
@@ -172,7 +171,12 @@ namespace MilbrandtFPDB
         private void btnSettings_Click(object sender, RoutedEventArgs e)
         {
             SettingsWindow settingsWindow = new SettingsWindow();
-            settingsWindow.ShowDialog();
+            bool? result = settingsWindow.ShowDialog();
+            if (result.HasValue && result.Value)
+            {
+                // because Square feet range step value may have changed
+                _vm.UpdateAvailableValues("SquareFeet");
+            }
         }
 
     }

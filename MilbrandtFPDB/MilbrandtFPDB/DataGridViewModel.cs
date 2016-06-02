@@ -105,7 +105,34 @@ namespace MilbrandtFPDB
                 bool match = true;
                 foreach(string property in SitePlan.Parameters)
                 {
-                    if (property != "FilePath" && SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != SitePlan.GetParameter(sp, property))
+                    if (property == "SquareFeet")
+                    {
+                        // handle range
+                        if (SelectedValues[property].Value != VALUE_ANY)
+                        {
+                            try
+                            {
+                                double d = sp.GetSquareFeetValue();
+                                string[] bounds = SelectedValues[property].Value.Split(" -".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                                double lower = double.Parse(bounds[0]);
+                                double upper = double.Parse(bounds[1]);
+                                if (d >= upper || d < lower)
+                                    match = false;
+                            }
+                            catch
+                            {
+                                match = false;
+                            }
+                        }
+                    }
+                    else if (property == "Date")
+                    {
+                        if (SelectedValues[property].Value != VALUE_ANY)
+                        {
+                            match = SelectedValues[property].Value == sp.Date.Year.ToString();
+                        }
+                    }
+                    else if (property != "FilePath" && SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != SitePlan.GetParameter(sp, property))
                     {
                         match = false;
                     }
@@ -145,26 +172,43 @@ namespace MilbrandtFPDB
                 return;
             }
 
-            // hashset to eliminate duplicate values
-            HashSet<string> distinctValues = new HashSet<string>();
+            List<string> orderedDistinctValues;
 
-            // Reflection type to get property from string
-            Type type = typeof(SitePlan);
-            PropertyInfo propInfo = type.GetProperty(propertyName);
-
-            foreach(SitePlan entry in DisplayedEntries)
+            // handle sq ft differently, because it has range values
+            if (propertyName == "SquareFeet")
             {
-                string val = propInfo.GetValue(entry).ToString();
-                distinctValues.Add(val);
+                orderedDistinctValues = new List<string>();
+                orderedDistinctValues.Add(VALUE_ANY);
+
+                double max = Entries.Max(m => m.GetSquareFeetValue());
+                int step = Settings.SqftRangeStep;
+                for (int i = 0; i < max; i += step)
+                {
+                    orderedDistinctValues.Add(string.Format("{0} - {1}", i == 0 ? 0 : i + 1, i + step));
+                }
+            }
+            else
+            {
+                // hashset to eliminate duplicate values
+                HashSet<string> distinctValues = new HashSet<string>();
+
+                foreach(SitePlan entry in DisplayedEntries)
+                {
+                    string val;
+                    if (propertyName == "Date")
+                        val = entry.Date.Year.ToString();
+                    else
+                        val = SitePlan.GetParameter(entry, propertyName);
+                    distinctValues.Add(val);
+                }
+
+                orderedDistinctValues = distinctValues.ToList();
+                orderedDistinctValues.Sort();
+                orderedDistinctValues.Insert(0, VALUE_ANY);
             }
 
-            List<string> orderedDistinctValues = distinctValues.ToList();
-            orderedDistinctValues.Sort();
-            orderedDistinctValues.Insert(0, VALUE_ANY);
             string selectedValue = SelectedValues[propertyName].Value;
-
-
-            // Make the new availableValues[propertyName] list match the orderedDistinctValues one
+           
             if (_availableValues[propertyName].Count == 0)
             {
                 foreach(string s in orderedDistinctValues)
@@ -174,6 +218,7 @@ namespace MilbrandtFPDB
             }
             else
             {
+                // Make the new availableValues[propertyName] list match the orderedDistinctValues one
                 int i = 0, j = 0;
                 while (i < _availableValues[propertyName].Count || j < orderedDistinctValues.Count)
                 {
