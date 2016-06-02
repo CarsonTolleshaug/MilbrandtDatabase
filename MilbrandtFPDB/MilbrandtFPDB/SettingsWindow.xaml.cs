@@ -69,6 +69,11 @@ namespace MilbrandtFPDB
                 _vm.JobsListFile = ofd.FileName;
             }
         }
+
+        private void btnResetPlanRegex_Click(object sender, RoutedEventArgs e)
+        {
+            _vm.SetPlanRegexToDefault();
+        }
     }
 
 

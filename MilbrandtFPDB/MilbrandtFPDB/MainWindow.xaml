@@ -1,7 +1,7 @@
 ﻿<Window xmlns:MilbrandtFPDB="clr-namespace:MilbrandtFPDB"  x:Class="MilbrandtFPDB.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Floor Plan Database" Height="750" Width="1200" Icon="Resources/db_icon.png">
+        Title="Floor Plan Database" Height="750" Width="1200" Icon="Resources/db_icon.png" Closing="Window_Closing">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="6*" MinWidth="550"/>

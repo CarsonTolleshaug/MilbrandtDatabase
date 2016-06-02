@@ -23,8 +23,9 @@ namespace MilbrandtFPDB
             DisplayedEntries = new ObservableCollection<SitePlan>();
             LoadHeaders();
 
-            // setting this automatically calls LoadEntries()
-            SelectedDatabase = DatabaseType.SingleFamily;
+            
+            DBHelper.Type = DatabaseType.SingleFamily;
+            LoadEntries();
         }
 
         private void LoadHeaders()
@@ -32,7 +33,7 @@ namespace MilbrandtFPDB
             SelectedValues = new Dictionary<string, KeyValueWrapper>();
             ParameterDisplayNames = new Dictionary<string, string>();
 
-            foreach (string header in SitePlan.Parameters)
+            foreach (string header in SitePlan.Properties)
             {
                 if (header != "FilePath")
                 {
@@ -45,6 +46,7 @@ namespace MilbrandtFPDB
                 ParameterDisplayNames[header] = header;
             }
 
+            // set non-default display names
             ParameterDisplayNames["ProjectName"] = "Project Name";
             ParameterDisplayNames["ProjectNumber"] = "Project #";
             ParameterDisplayNames["ClientName"] = "Client Name";
@@ -69,6 +71,11 @@ namespace MilbrandtFPDB
             ResetHeaderComboBoxes();
             RefreshDisplay();
             UpdateAvailableValues();
+        }
+
+        public void SaveEntries()
+        {
+            DBHelper.Write(Entries);
         }
 
         public void AddEntry(SitePlan sp, bool refreshLists = true)
@@ -103,7 +110,7 @@ namespace MilbrandtFPDB
             foreach(SitePlan sp in entries)
             {
                 bool match = true;
-                foreach(string property in SitePlan.Parameters)
+                foreach(string property in SitePlan.Properties)
                 {
                     if (property == "SquareFeet")
                     {
@@ -132,7 +139,7 @@ namespace MilbrandtFPDB
                             match = SelectedValues[property].Value == sp.Date.Year.ToString();
                         }
                     }
-                    else if (property != "FilePath" && SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != SitePlan.GetParameter(sp, property))
+                    else if (property != "FilePath" && SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != SitePlan.GetProperty(sp, property))
                     {
                         match = false;
                     }
@@ -198,7 +205,7 @@ namespace MilbrandtFPDB
                     if (propertyName == "Date")
                         val = entry.Date.Year.ToString();
                     else
-                        val = SitePlan.GetParameter(entry, propertyName);
+                        val = SitePlan.GetProperty(entry, propertyName);
                     distinctValues.Add(val);
                 }
 
@@ -288,6 +295,9 @@ namespace MilbrandtFPDB
             {
                 if (DBHelper.Type != value)
                 {
+                    // save changes before we switch
+                    DBHelper.Write(Entries);
+
                     DBHelper.Type = value;
                     OnPropertyChanged("SelectedDatabase");
                     LoadEntries();

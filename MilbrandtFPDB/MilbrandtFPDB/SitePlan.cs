@@ -189,23 +189,23 @@ namespace MilbrandtFPDB
 
         #endregion
 
-        private static List<string> _parameters;
-        internal static List<string> Parameters
+        private static List<string> _properties;
+        internal static List<string> Properties
         {
             get
             {
-                if (_parameters == null)
+                if (_properties == null)
                 {
-                    _parameters = new List<string>();
+                    _properties = new List<string>();
                     Type type = typeof(SitePlan);
                     foreach (PropertyInfo pi in type.GetProperties())
-                        _parameters.Add(pi.Name);
+                        _properties.Add(pi.Name);
                 }
 
-                return _parameters;
+                return _properties;
             }
         }
-        public static string GetParameter(SitePlan sitePlan, string parameterName)
+        public static string GetProperty(SitePlan sitePlan, string parameterName)
         {
             if (parameterName == "Date")
                 return sitePlan.Date.ToShortDateString();
@@ -214,10 +214,14 @@ namespace MilbrandtFPDB
             PropertyInfo pi = type.GetProperty(parameterName);
             return pi.GetValue(sitePlan).ToString();
         }
-        public static void SetParameter(SitePlan sitePlan, string parameterName, string value)
+        public static void SetProperty(SitePlan sitePlan, string parameterName, string value)
         {
             if (parameterName == "Date")
-                sitePlan.Date = DateTime.Parse(value);
+            {
+                DateTime dt;
+                if (DateTime.TryParse(value, out dt))
+                    sitePlan.Date = dt;
+            }
             else
             {
                 Type type = typeof(SitePlan);
@@ -226,30 +230,13 @@ namespace MilbrandtFPDB
             }
         }
 
-        public SitePlan(string projNumber, string projName, string clientName, string location, string type, string plan, string width, string depth, string beds, string baths, string sqrft, string date, string linkPath)
-        {
-            // Add new params here
-            this.ProjectNumber = projNumber;
-            this.ProjectName = projName;
-            this.ClientName = clientName;
-            this.Location = location;
-            this.Type = type;
-            this.Plan = plan;
-            this.Width = width;
-            this.Depth = depth;
-            this.Beds = beds;
-            this.Baths = baths;
-            this.SquareFeet = sqrft;
-            this.Date = DateTime.Parse(date);
-            this.FilePath = linkPath;
-        }
         public SitePlan() //Constructor for creating new entries
         {
-            // Add new params here
+            // Add new params default values here
             this.ProjectName = "New Plan Reference";
             this.ClientName = this.Location = this.Type = this.Plan =
                 this.FilePath = "";
-            this.Date = DateTime.Now;
+            this.Date = DateTime.MinValue;
             this.ProjectNumber = this.Beds = this.Baths =
                 this.SquareFeet = this.Width = this.Depth = "0";
         }

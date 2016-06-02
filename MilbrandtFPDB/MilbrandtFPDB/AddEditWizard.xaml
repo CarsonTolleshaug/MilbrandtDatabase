@@ -42,9 +42,8 @@
         <!-- Title -->
         <Label Content="{Binding TitleText}" FontSize="16" Margin="10,0,10,0"/>
         
-        <!-- Edit Controls -->
-        <Grid x:Name="EditFileSelectControl" Grid.Row="1" Margin="10,5,10,3">
-            <Grid.Style>
+        <Grid x:Name="FileSelectControl" Grid.Row="1" Margin="10,5,10,3">
+            <!--<Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
@@ -53,7 +52,7 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </Grid.Style>
+            </Grid.Style>-->
             
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="60" />
@@ -61,47 +60,33 @@
                 <ColumnDefinition Width="35" />
                 <ColumnDefinition Width="25" />
             </Grid.ColumnDefinitions>
-            
-            <Label Content="PDF File" HorizontalAlignment="Right" VerticalAlignment="Center" />
-            <TextBox x:Name="txtFilePath" Grid.Column="1" Text="{Binding Path=FilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1"/>
-            <Button x:Name="btnFilePathBrowse" Content="..." Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" Click="btnBrowse_Click"/>
-            <Button x:Name="btnOpenPDF" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="btnOpenPDF_Click">
-                <Image Width="20" Height="16" Source="Resources/open_icon.png" Opacity="0.6" />
-            </Button>
-        </Grid>
-        
-        <!-- Add Controls -->
-        <Grid x:Name="AddFileSelectControl" Grid.Row="1" Margin="10,0,10,0">
-            <Grid.Style>
-                <Style TargetType="Grid">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding WizardType}" Value="Add">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="65" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="60" />
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="30" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="30" />
             </Grid.RowDefinitions>
             
-            <Label Content="Floor Plan" HorizontalAlignment="Left" VerticalAlignment="Center" />
-            <TextBox x:Name="txtFloorPlanPath" Grid.Column="1" Text="{Binding Path=FloorPlanPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1"/>
-            <Button x:Name="btnFloorPlanBrowse" Content="..." Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" Click="btnBrowse_Click"/>
+            <!-- Add Controls -->
+            <Label Content="Floor Plan" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding AddControlVisibility}" />
+            <TextBox x:Name="txtFloorPlanPath" Grid.Column="1" Text="{Binding Path=FloorPlanPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1" Visibility="{Binding AddControlVisibility}" />
 
-            <StackPanel x:Name="elevationsPanel" Orientation="Vertical" Grid.Row="1" Grid.ColumnSpan="3" >         
-            </StackPanel>
+            <!-- Edit Controls -->
+            <Label Content="PDF File" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="{Binding EditControlVisibility}" />
+            <TextBox x:Name="txtFilePath" Grid.Column="1" Text="{Binding Path=FilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1" Visibility="{Binding EditControlVisibility}" />
             
-            <Button x:Name="btnAddElevation" Content="Append another PDF" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="2" VerticalAlignment="Center" Margin="0,0,5,0" Click="btnAddElevation_Click" />
+            
+            <!-- Shared Controls -->
+            <Button x:Name="btnBrowse" Content="..." Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" Click="btnBrowse_Click"/>
+            <Button x:Name="btnOpenPDF" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="btnOpenPDF_Click">
+                <Image Width="20" Height="16" Source="Resources/open_icon.png" Opacity="0.6" />
+            </Button>
+
+
+            <!-- Additional PDFs -->
+            <StackPanel x:Name="additionalPdfsPanel" Orientation="Vertical" Grid.Row="1" Grid.ColumnSpan="3" >
+            </StackPanel>
+
+            <Button x:Name="btnAddPdf" Content="Append another PDF" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="2" VerticalAlignment="Center" Margin="0,0,5,0" Click="btnAddPdf_Click" />
         </Grid>
 
         

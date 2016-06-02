@@ -38,7 +38,7 @@ namespace MilbrandtFPDB
         {
             // Available Values
             AvailableValues = new Dictionary<string, ObservableCollection<string>>();
-            foreach (string property in SitePlan.Parameters)
+            foreach (string property in SitePlan.Properties)
             {
                 // FilePath and Date do not need available values
                 if (property != "FilePath" && property != "Date")
@@ -46,7 +46,7 @@ namespace MilbrandtFPDB
                     HashSet<string> distinctValues = new HashSet<string>();
                     foreach (SitePlan sp in _mainVM.Entries)
                     {
-                        distinctValues.Add(SitePlan.GetParameter(sp, property));
+                        distinctValues.Add(SitePlan.GetProperty(sp, property));
                     }
                     List<string> sortedDistinctValues = distinctValues.ToList();
                     sortedDistinctValues.Sort();
@@ -56,9 +56,9 @@ namespace MilbrandtFPDB
 
             // Property Values
             PropertyValues = new Dictionary<string, KeyValueWrapper>();
-            foreach (string property in SitePlan.Parameters)
+            foreach (string property in SitePlan.Properties)
             {                
-                string value = WizardType == AddEditWizardType.Add ? "" : SitePlan.GetParameter(Entry, property);
+                string value = WizardType == AddEditWizardType.Add ? "" : SitePlan.GetProperty(Entry, property);
 
                 if (property == "FilePath")
                 {
@@ -72,8 +72,8 @@ namespace MilbrandtFPDB
                 }
             }
 
-            // Elevation Paths
-            ElevationPaths = new ObservableCollection<KeyValueWrapper>();
+            // Aditional PDF Paths
+            AdditionalPdfPaths = new ObservableCollection<KeyValueWrapper>();
         }
 
         private void ProjectNumberChanged(object sender, PropertyChangedEventArgs e)
@@ -143,7 +143,7 @@ namespace MilbrandtFPDB
             }
         }
 
-        public ObservableCollection<KeyValueWrapper> ElevationPaths
+        public ObservableCollection<KeyValueWrapper> AdditionalPdfPaths
         {
             get;
             private set;
@@ -166,6 +166,17 @@ namespace MilbrandtFPDB
             private set;
         }
 
+        public System.Windows.Visibility AddControlVisibility
+        {
+            get { return WizardType == AddEditWizardType.Add ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed; }
+        }
+
+        public System.Windows.Visibility EditControlVisibility
+        {
+            get { return WizardType == AddEditWizardType.Edit ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed; }
+        }
+
+
         private void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
@@ -185,23 +196,21 @@ namespace MilbrandtFPDB
             if (Entry == null)
                 _entry = new SitePlan();
 
+            // This may throw exceptions which are intentionally uncaught here
             if (WizardType == AddEditWizardType.Add)
-            {
-                // This may throw exceptions which are intentionally uncaught here
-                BuildCompositePdfFromFloorPlanAndElevation();
-            }
+                BuildCompositePdf(FloorPlanPath, true);
             else
-            {
-                // Force FilePath to be filled in
-                if (String.IsNullOrWhiteSpace(FilePath))
-                    throw new ArgumentException(GetParameterDisplayName("FilePath") + " cannot be blank.");
-            }
+                BuildCompositePdf(FilePath, false);
+
+            // Force FilePath to be filled in
+            if (String.IsNullOrWhiteSpace(FilePath))
+                throw new ArgumentException(GetParameterDisplayName("FilePath") + " cannot be blank.");
 
             // Set the properties of the site plan object
             Entry.FilePath = FilePath;
             foreach (string property in PropertyValues.Keys)
             {
-                SitePlan.SetParameter(Entry, property, PropertyValues[property].Value);
+                SitePlan.SetProperty(Entry, property, PropertyValues[property].Value);
             }
 
             if (_type == AddEditWizardType.Add)
@@ -212,26 +221,26 @@ namespace MilbrandtFPDB
             //Todo: tell _mainVM to save to file
         }
 
-        private void BuildCompositePdfFromFloorPlanAndElevation()
+        private void BuildCompositePdf(string mainPdfPath, bool createNewFile)
         {
             #region Value Checking
             // Force FloorPlanPath to be filled in
-            if (String.IsNullOrWhiteSpace(FloorPlanPath))
+            if (String.IsNullOrWhiteSpace(mainPdfPath))
                 throw new ArgumentException("Floor Plan cannot be blank");
                 
             // Force FloorPlanPath to exist
-            if (!File.Exists(FloorPlanPath))
+            if (!File.Exists(mainPdfPath))
                 throw new ArgumentException("Unable to find floor plan file");
 
-            // Force Elevation paths to exist if specified
-            bool hasElevations = false;
-            foreach (KeyValueWrapper elevationPath in ElevationPaths)
+            // Force pdf paths to exist if specified
+            bool hasAdditionalPdfs = false;
+            foreach (KeyValueWrapper pdfPath in AdditionalPdfPaths)
             {
-                if (!String.IsNullOrWhiteSpace(elevationPath.Value))
+                if (!String.IsNullOrWhiteSpace(pdfPath.Value))
                 {
-                    hasElevations = true;
-                    if (!File.Exists(elevationPath.Value))
-                        throw new ArgumentException("Unable to find elevation file:\n" + elevationPath.Value);
+                    hasAdditionalPdfs = true;
+                    if (!File.Exists(pdfPath.Value))
+                        throw new ArgumentException("Unable to find Pdf:\n" + pdfPath.Value);
                 }
             }
 
@@ -247,9 +256,12 @@ namespace MilbrandtFPDB
                 throw new ArgumentException(_mainVM.ParameterDisplayNames["Plan"] + " cannot be blank");
             #endregion
 
-            // Set our file path to export to
-            FilePath = DBHelper.GetStandardPdfFilename(projNum, plan);
-            
+            if (createNewFile)
+            {
+                // Set our file path to export to
+                FilePath = DBHelper.GetStandardPdfFilename(projNum, plan);
+            }
+
             // Create the parent folder if it does not exist
             string parentDir = Directory.GetParent(FilePath).FullName;
             if (!Directory.Exists(parentDir))
@@ -259,10 +271,10 @@ namespace MilbrandtFPDB
             for (int i = 0; File.Exists(FilePath); i++)
                 FilePath = DBHelper.GetStandardPdfFilename(projNum, plan + "_" + i);
 
-            if (!hasElevations)
+            if (!hasAdditionalPdfs)
             {
                 // We simply copy the pdf to the new location
-                File.Copy(FloorPlanPath, FilePath);
+                File.Copy(mainPdfPath, FilePath);
             }
             else
             {
@@ -270,13 +282,13 @@ namespace MilbrandtFPDB
                 PdfSharp.Pdf.PdfDocument outputDoc = new PdfSharp.Pdf.PdfDocument();
 
                 // Add floor plan pages
-                AddPagesFromFileToDoc(FloorPlanPath, outputDoc);
+                AddPagesFromFileToDoc(mainPdfPath, outputDoc);
                 
-                // Add elevations
-                foreach (KeyValueWrapper elevationPath in ElevationPaths)
+                // Add additional pdfs
+                foreach (KeyValueWrapper pdfPath in AdditionalPdfPaths)
                 {
-                    if (!String.IsNullOrWhiteSpace(elevationPath.Value))
-                        AddPagesFromFileToDoc(elevationPath.Value, outputDoc);
+                    if (!String.IsNullOrWhiteSpace(pdfPath.Value))
+                        AddPagesFromFileToDoc(pdfPath.Value, outputDoc);
                 }
 
                 // Save the new combined document in the previously generated FilePath location
@@ -304,12 +316,18 @@ namespace MilbrandtFPDB
             // non-alphanumeric character (including underscore) and may have alphanumeric characters in between it and the 
             // digits so long as there is a non-alphanumeric separater before the suffix 
             // [Ex: "A10 Plan 4F (DL)" will match "4" as the digits and "DL" as the suffix]
-            Match m = Regex.Match(filename, @"(?(.*Plan\s*\d+)(?:.*Plan\s*)(?<digits>\d+)|(?:.*)(?<digits>\d{4}))(?:(?:.*?[\W_]+)*?(?<suffix>DL|DB|\.2))?", RegexOptions.IgnoreCase);
-            string digits = m.Groups["digits"] == null? "" : m.Groups["digits"].Value;
-            string suffix = m.Groups["suffix"] == null? "" : m.Groups["suffix"].Value;
-            StringBuilder plan = new StringBuilder();
+            string digits = "", suffix = "";
+            try
+            {
+                Match m = Regex.Match(filename, Settings.PlanParseRegex, RegexOptions.IgnoreCase);
+                digits = m.Groups["digits"].Value;
+                suffix = m.Groups["suffix"].Value;
+            }
+            catch { }
             if (digits.Length > 0)
             {
+                StringBuilder plan = new StringBuilder();
+                
                 if (digits.Length < 4)
                     plan.Append("Plan ");
                 plan.Append(digits);
@@ -318,8 +336,9 @@ namespace MilbrandtFPDB
                     // always append DL (instead of DB or .2)
                     plan.Append(" DL");
                 }
+
+                SetPropertyIfEmpty("Plan", plan.ToString());
             }
-            SetPropertyIfEmpty("Plan", plan.ToString());
             // *********************************************************************** //
 
 

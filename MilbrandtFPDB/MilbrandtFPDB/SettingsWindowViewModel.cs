@@ -15,12 +15,14 @@ namespace MilbrandtFPDB
         private string _plansDir;
         private string _jobsFile;
         private string _sqftRange;
+        private string _planRegex;
 
         public SettingsWindowViewModel()
         {
             PlansDirectory = Settings.PlansRootDirectory;
             JobsListFile = Settings.JobListFile;
             SqftRangeStep = Settings.SqftRangeStep.ToString();
+            PlanRegex = Settings.PlanParseRegex;
         }
 
         public string PlansDirectory
@@ -68,6 +70,19 @@ namespace MilbrandtFPDB
             }
         }
 
+        public string PlanRegex
+        {
+            get { return _planRegex; }
+            set
+            {
+                if (_planRegex != value)
+                {
+                    _planRegex = value;
+                    OnPropertyChanged("PlanRegex");
+                }
+            }
+        }
+
         public void Save()
         {
             if (!Directory.Exists(PlansDirectory))
@@ -81,11 +96,21 @@ namespace MilbrandtFPDB
             if (!int.TryParse(SqftRangeStep, out temp) || temp <= 0)
                 throw new ArgumentException("Square Ft. Range Step Value must be a valid positive integer");
 
+            if (String.IsNullOrWhiteSpace(PlanRegex))
+                throw new ArgumentException("Plan Parser Regular Expression cannot be blank");
+
             Settings.PlansRootDirectory = PlansDirectory;
             Settings.JobListFile = JobsListFile;
             Settings.SqftRangeStep = temp;
+            Settings.PlanParseRegex = PlanRegex;
 
-            Settings.SaveSettings();
+            Settings.SaveGlobalSettings();
+        }
+
+        public void SetPlanRegexToDefault()
+        {
+            Settings.ResetPlanRegexToDefault();
+            PlanRegex = Settings.PlanParseRegex;
         }
 
         private void OnPropertyChanged(string propertyName)

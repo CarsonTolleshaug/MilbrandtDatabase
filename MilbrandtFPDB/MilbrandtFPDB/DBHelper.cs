@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace MilbrandtFPDB
 {
@@ -21,7 +23,21 @@ namespace MilbrandtFPDB
             return Path.Combine(Settings.PlansRootDirectory, typeStr, projectNumber, plan + ".pdf");
         }
 
-        private static string dataFile;
+        private static string DataFile
+        {
+            get
+            {
+                return Type.ToString().ToLower() + ".xml";
+            }
+        }
+
+        private static string OldDataFile
+        {
+            get
+            {
+                return Type.ToString().ToLower() + ".dat";
+            }
+        }
 
         private static DatabaseType dbType;
         public static DatabaseType Type
@@ -29,14 +45,14 @@ namespace MilbrandtFPDB
             set
             {
                 dbType = value;
-                if (value == DatabaseType.Flat)
-                    dataFile = "flat.dat";
-                if (value == DatabaseType.SingleFamily)
-                    dataFile = "singlefamily.dat";
-                if (value == DatabaseType.Townhome)
-                    dataFile = "townhome.dat";
-                if (value == DatabaseType.Carriage)
-                    dataFile = "carriage.dat";
+                //if (value == DatabaseType.Flat)
+                //    DataFile = "flat.dat";
+                //if (value == DatabaseType.SingleFamily)
+                //    DataFile = "singlefamily.dat";
+                //if (value == DatabaseType.Townhome)
+                //    DataFile = "townhome.dat";
+                //if (value == DatabaseType.Carriage)
+                //    DataFile = "carriage.dat";
             }
             get
             {
@@ -44,69 +60,142 @@ namespace MilbrandtFPDB
             }
         }
 
-        public static void Write(List<SitePlan> sites)
+        public static void Write(IEnumerable<SitePlan> entries)
         {
-            if (!File.Exists(dataFile))
+            // no need to write an empty file, plus this prevents us from accidentally clearing the list
+            if (entries == null || entries.Count() == 0)
+                return;
+
+            using (XmlWriter writer = XmlWriter.Create(DataFile, new XmlWriterSettings() { Indent = true }))
             {
-                using (File.Create(dataFile)) { }//closes the filestream so the method can continue.
+                writer.WriteStartDocument();
+                writer.WriteStartElement("EntryList");
+
+                foreach (SitePlan s in entries)
+                {
+                    writer.WriteStartElement("Entry");
+
+                    // Write all the siteplan properties
+                    foreach (string propertyName in SitePlan.Properties)
+                        writer.WriteElementString(propertyName, SitePlan.GetProperty(s, propertyName));
+
+                    writer.WriteEndElement();
+                }
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+                writer.Close();
             }
 
-            StreamWriter sw = new StreamWriter(dataFile, false);
-
-            foreach (SitePlan s in sites)
+            // rename the old data file with .bak extension, to show it's no longer in use
+            if (File.Exists(OldDataFile))
             {
-                sw.WriteLine(s.Writestring);
+                File.Copy(OldDataFile, OldDataFile + ".bak", true);
+                File.Delete(OldDataFile);
             }
-            sw.Close();
-        }
-
-        
+        }        
 
         public static List<SitePlan> Read()
         {
-            List<SitePlan> retval = new List<SitePlan>();
+            List<SitePlan> entryList = new List<SitePlan>();
 
-            if (File.Exists(dataFile))
+            if (File.Exists(DataFile))
             {
-                StreamReader sr = new StreamReader(dataFile);
+                XDocument doc = XDocument.Load(DataFile, LoadOptions.PreserveWhitespace);
+                XElement list = doc.Element("EntryList");
+                if (list != null)
+                {
+                    foreach(XElement entry in list.Descendants("Entry"))
+                    {
+                        SitePlan s = new SitePlan();
 
+                        // Read or get a blank value for all properties
+                        foreach (string propertyName in SitePlan.Properties)
+                            SitePlan.SetProperty(s, propertyName, ReadValue(propertyName, entry));
 
+                        entryList.Add(s);
+                    }
+                }     
+            }
+            else if (File.Exists(OldDataFile))
+            {
+                entryList = ReadOldFile(OldDataFile);
+            }
+            else if (File.Exists(OldDataFile + ".bak"))
+            {
+                entryList = ReadOldFile(OldDataFile + ".bak");
+            }
+
+            return entryList;
+        }
+
+        private static string ReadValue(string name, XElement root)
+        {
+            XElement elm = root.Element(name);
+            if (elm == null)
+                return "";
+
+            return elm.Value;
+        }
+
+        private static List<SitePlan> ReadOldFile(string path)
+        {
+            List<SitePlan> entryList = new List<SitePlan>();
+            using (StreamReader sr = new StreamReader(path))
+            {
                 while (!sr.EndOfStream)
                 {
                     string[] data = sr.ReadLine().Split("|".ToCharArray(), 12);
-                    //if it's an old data file add the "date" parameter:
-                    if (data.Length == 11)
-                        retval.Add(new SitePlan(data[0], data[1], data[2], data[3], "", data[4], data[5], data[6], data[7], data[8], data[9], "", data[10]));
-                    else
-                        retval.Add(new SitePlan(data[0], data[1], data[2], data[3], "", data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11]));
+
+                    if (data.Length >= 11)
+                    {
+                        SitePlan s = new SitePlan()
+                        {
+                            ProjectNumber = data[0],
+                            ProjectName = data[1],
+                            ClientName = data[2],
+                            Location = data[3],
+                            Plan = data[4],
+                            Width = data[5],
+                            Depth = data[6],
+                            Beds = data[7],
+                            Baths = data[8],
+                            SquareFeet = data[9],
+                            FilePath = data.Last()
+                        };
+
+                        if (data.Length > 11)
+                            s.Date = DateTime.Parse(data[10]);
+
+                        entryList.Add(s);
+                    }
                 }
 
                 sr.Close();
             }
-
-            return retval;
+            return entryList;
         }
 
-        static public string WriteProjectNumber(string pn)
-        {
-            //removes the 19 or 20 from the project number when displaying it
-            if (pn.Length >= 6)
-                return pn.Remove(0, 2);
-            else
-                return pn;
-        }
+        //static public string WriteProjectNumber(string pn)
+        //{
+        //    //removes the 19 or 20 from the project number when displaying it
+        //    if (pn.Length >= 6)
+        //        return pn.Remove(0, 2);
+        //    else
+        //        return pn;
+        //}
 
-        static public string ReadProjectNumber(string pn)
-        {
-            if (pn.Length >= 6)
-                return pn;
-            //adds the 19 or 20 to the begining of the project number when storing it
-            //if it begins with 80 or above use the prefix 19 (i.e. 1987)
-            if (pn[0] >= '8')
-                return pn.Insert(0, "19");
-            else //if it begins with lower than 80 use the prefix 20 (i.e. 2012)
-                return pn.Insert(0, "20");
-        }
+        //static public string ReadProjectNumber(string pn)
+        //{
+        //    if (pn.Length >= 6)
+        //        return pn;
+        //    //adds the 19 or 20 to the begining of the project number when storing it
+        //    //if it begins with 80 or above use the prefix 19 (i.e. 1987)
+        //    if (pn[0] >= '8')
+        //        return pn.Insert(0, "19");
+        //    else //if it begins with lower than 80 use the prefix 20 (i.e. 2012)
+        //        return pn.Insert(0, "20");
+        //}
 
     }
 }

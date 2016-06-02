@@ -7,31 +7,41 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Margin="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="95" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="35" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" MinHeight="50" />
-                <RowDefinition Height="*" MinHeight="50" />
-                <RowDefinition Height="*" MinHeight="50" />
-            </Grid.RowDefinitions>
-
+        <StackPanel Margin="5">
 
             <TextBlock Text="Saved Plans Directory" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
-            <TextBox Text="{Binding Path=PlansDirectory, Mode=TwoWay}" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-            <Button x:Name="btnBrowsePlansDir" Content="..." Grid.Column="2" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="5" Click="btnBrowsePlansDir_Click" />
-
-            <TextBlock Text="Job List File" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
-            <TextBox Text="{Binding Path=JobsListFile, Mode=TwoWay}" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-            <Button x:Name="btnBrowseJobsFile" Content="..." Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="5" Click="btnBrowseJobsFile_Click" />
+            <Grid Margin="5,0,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="35" />
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Path=PlansDirectory, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                <Button x:Name="btnBrowsePlansDir" Content="..." Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="5,0,0,0" Click="btnBrowsePlansDir_Click" />
+            </Grid>
+            
+            <TextBlock Text="Job List File Location" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
+            <Grid Margin="5,0,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="35" />
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Path=JobsListFile, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                <Button x:Name="btnBrowseJobsFile" Content="..." Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="5,0,0,0" Click="btnBrowseJobsFile_Click" />
+            </Grid>
             
             <TextBlock Text="Sqare Ft. Range Step Value" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
-            <TextBox Text="{Binding Path=SqftRangeStep, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Width="80" />
+            <TextBox Text="{Binding Path=SqftRangeStep, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left" Width="80" Margin="5,0,5,5"/>
             
-        </Grid>
+            <TextBlock Text="Plan Parsing Regular Expression" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" Padding="5" TextWrapping="WrapWithOverflow" />
+            <Grid Margin="5,0,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="55" />
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Path=PlanRegex, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                <Button x:Name="btnResetPlanRegex" Content="Reset" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="5,0,0,0" Click="btnResetPlanRegex_Click" />
+            </Grid>
+        </StackPanel>
         
         <Grid Margin="5" Grid.Row="1">
             <Grid.ColumnDefinitions>

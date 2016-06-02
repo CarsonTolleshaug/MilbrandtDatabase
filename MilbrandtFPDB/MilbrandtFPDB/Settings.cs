@@ -6,33 +6,59 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using System.Text.RegularExpressions;
 
 namespace MilbrandtFPDB
 {
     public static class Settings
     {
-        private static readonly string settingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FPDatabase"); //<- Defualt System Directory 
-        private static readonly string settingsFileName = "settings.xml";
+        #region Settings File Locations
+        private static readonly string localSettingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FPDatabase"); //<- Defualt System Directory 
+        private static readonly string localSettingsFileName = "settings.xml";
+        private static readonly string globalSettingsDirectory = "Global_Settings";
+        private static readonly string globalSettingsFileName = "global_settings.xml";
 
-        public static string SettingsDirectory
+        public static string LocalSettingsDirectory
         {
             get
             {
-                return settingsDirectory;
+                return localSettingsDirectory;
             }
         }
-        public static string SettingsFile
+        public static string LocalSettingsFile
         {
             get
             {
-                return Path.Combine(settingsDirectory, settingsFileName);
+                return Path.Combine(localSettingsDirectory, localSettingsFileName);
             }
         }
-        
+
+        public static string GlobalSettingsDirectory
+        {
+            get
+            {
+                return globalSettingsDirectory;
+            }
+        }
+        public static string GlobalSettingsFile
+        {
+            get
+            {
+                return Path.Combine(globalSettingsDirectory, globalSettingsFileName);
+            }
+        }
+        #endregion
+
+
+        #region Global Settings
+
         private static string plansRootDirectory = @"C:\Users\carso\Documents\Milbrandt\Plans";
         private static string jobListFile = @"C:\Users\carso\Documents\Milbrandt\MilbrandtDatabase\JobsList\Milbrandt Job List\bin\x86\Release\jobs.dat";
         private static int sqftRangeStep = 250;
-        private static bool initialized = ReadSettings();
+        private const string DEFAULT_PLAN_REGEX = @"(?(.*Plan\s*\d+)(?:.*Plan\s*)(?<digits>\d+)|(?:.*)(?<digits>\d{4}))(?:(?:.*?[\W_]+)*?(?<suffix>DL|DB|\.2))?";
+        private static string planRegex = DEFAULT_PLAN_REGEX;
+
+        private static bool globalInitialized = ReadGlobalSettings();
 
         public static string PlansRootDirectory
         {
@@ -70,12 +96,29 @@ namespace MilbrandtFPDB
             }
         }
 
-        public static void SaveSettings()
+        public static string PlanParseRegex
         {
-            if (!Directory.Exists(SettingsDirectory))
-                Directory.CreateDirectory(SettingsDirectory);
+            get { return planRegex; }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    planRegex = value;
+                }
+            }
+        }
 
-            using (XmlWriter writer = XmlWriter.Create(SettingsFile, new XmlWriterSettings() { Indent = true }))
+        public static void ResetPlanRegexToDefault()
+        {
+            PlanParseRegex = DEFAULT_PLAN_REGEX;
+        }
+
+        public static void SaveGlobalSettings()
+        {
+            if (!Directory.Exists(GlobalSettingsDirectory))
+                Directory.CreateDirectory(GlobalSettingsDirectory);
+
+            using (XmlWriter writer = XmlWriter.Create(GlobalSettingsFile, new XmlWriterSettings() { Indent = true }))
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("Settings");
@@ -84,6 +127,7 @@ namespace MilbrandtFPDB
                 writer.WriteElementString("PlansRootDirectory", PlansRootDirectory);
                 writer.WriteElementString("JobListFile", JobListFile);
                 writer.WriteElementString("SqftRangeStep", SqftRangeStep.ToString());
+                writer.WriteElementString("PlanRegex", XmlConvert.EncodeName(PlanParseRegex));
 
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
@@ -91,17 +135,18 @@ namespace MilbrandtFPDB
             }
         }
 
-        public static bool ReadSettings()
+        public static bool ReadGlobalSettings()
         {
-            if (File.Exists(SettingsFile))
+            if (File.Exists(GlobalSettingsFile))
             {
-                XDocument doc = XDocument.Load(SettingsFile, LoadOptions.PreserveWhitespace);
+                XDocument doc = XDocument.Load(GlobalSettingsFile, LoadOptions.PreserveWhitespace);
                 XElement root = doc.Element("Settings");
 
                 // Settings
                 PlansRootDirectory = ReadValue("PlansRootDirectory", root);
                 JobListFile = ReadValue("JobListFile", root);
                 SqftRangeStep = ReadInt("SqftRangeStep", root);
+                PlanParseRegex = XmlConvert.DecodeName(ReadValue("PlanRegex", root));
             }
 
             return true;
@@ -123,6 +168,8 @@ namespace MilbrandtFPDB
             //    retval.Add("100");
 
         }
+
+        #endregion
 
         private static string ReadValue(string name, XElement root)
         {

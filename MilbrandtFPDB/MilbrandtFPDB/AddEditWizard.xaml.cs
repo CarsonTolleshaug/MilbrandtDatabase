@@ -46,7 +46,7 @@ namespace MilbrandtFPDB
 
         private void InitializeUI()
         {
-            foreach(string property in SitePlan.Parameters)
+            foreach(string property in SitePlan.Properties)
             {
                 if (property != "FilePath")
                 {
@@ -155,19 +155,22 @@ namespace MilbrandtFPDB
             bool? result = ofd.ShowDialog();
             if (result.HasValue && result.Value)
             {
-                if (sender == btnFilePathBrowse)
+                if (sender == btnBrowse)
                 {
-                    _vm.FilePath = ofd.FileName;                    
-                }
-                else if (sender == btnFloorPlanBrowse)
-                {
-                    _vm.FloorPlanPath = ofd.FileName;
-                    _vm.AutofillFromFloorPlan();
+                    if (_vm.WizardType == AddEditWizardType.Add)
+                    {
+                        _vm.FloorPlanPath = ofd.FileName;
+                        _vm.AutofillFromFloorPlan();
+                    }
+                    else
+                    {
+                        _vm.FilePath = ofd.FileName;
+                    }
                 }
                 else
                 {
                     int index = (int)((sender as Button).Tag);
-                    _vm.ElevationPaths[index].Value = ofd.FileName;
+                    _vm.AdditionalPdfPaths[index].Value = ofd.FileName;
                 }
             }
         }
@@ -190,26 +193,26 @@ namespace MilbrandtFPDB
             }
         }
 
-        private void btnAddElevation_Click(object sender, RoutedEventArgs e)
+        private void btnAddPdf_Click(object sender, RoutedEventArgs e)
         {
             // Create UI Element, link to vm, and add to stack panel
             
-            // the index of new elevation
-            int index; 
-            for (index = 0; index < _vm.ElevationPaths.Count && _vm.ElevationPaths[index].Value != null; index++);
+            // the index of new pdf
+            int index;
+            for (index = 0; index < _vm.AdditionalPdfPaths.Count && _vm.AdditionalPdfPaths[index].Value != null; index++) ;
 
-            // Max out at 26 elevations
-            if (index >= 26)
+            // Max out at 20 pdfs
+            if (index >= 20)
                 return;
 
-            if (index == _vm.ElevationPaths.Count)
+            if (index == _vm.AdditionalPdfPaths.Count)
             {
                 // Add value to vm
-                _vm.ElevationPaths.Add(new KeyValueWrapper(index.ToString(), ""));
+                _vm.AdditionalPdfPaths.Add(new KeyValueWrapper(index.ToString(), ""));
             }
             else
             {
-                _vm.ElevationPaths[index].Value = "";
+                _vm.AdditionalPdfPaths[index].Value = "";
             }
 
             // Root element
@@ -232,7 +235,7 @@ namespace MilbrandtFPDB
             tb.VerticalAlignment = System.Windows.VerticalAlignment.Center;
             tb.SetValue(Grid.ColumnProperty, 1);
             // binding
-            Binding textBinding = new Binding("ElevationPaths[" + index + "].Value");
+            Binding textBinding = new Binding("AdditionalPdfPaths[" + index + "].Value");
             textBinding.Mode = BindingMode.TwoWay;
             tb.SetBinding(TextBox.TextProperty, textBinding);
 
@@ -261,7 +264,7 @@ namespace MilbrandtFPDB
             grid.Children.Add(removeBtn);
 
             // Add grid to stack panel
-            elevationsPanel.Children.Insert(index, grid);
+            additionalPdfsPanel.Children.Insert(index, grid);
         }
 
         private void removeBtn_Click(object sender, RoutedEventArgs e)
@@ -270,16 +273,16 @@ namespace MilbrandtFPDB
             int index = (int)(sender as Button).Tag;
             
             // Clear the path value so it isn't used
-            _vm.ElevationPaths[index].Value = null;
+            _vm.AdditionalPdfPaths[index].Value = null;
 
             // Find the parent grid and remove it from the stack panel
-            foreach(UIElement child in elevationsPanel.Children)
+            foreach(UIElement child in additionalPdfsPanel.Children)
             {
                 Grid grid = (child as Grid);
                 int? tag = grid == null ? null : (grid.Tag as int?);
                 if (tag.HasValue && tag.Value == index)
                 {
-                    elevationsPanel.Children.Remove(child);
+                    additionalPdfsPanel.Children.Remove(child);
 
                     // return so we don't get an exception for modifying the collection
                     return; 
@@ -292,7 +295,10 @@ namespace MilbrandtFPDB
         {
             // Open the PDF in Acrobat
             Process open = new Process();
-            open.StartInfo = new ProcessStartInfo(_vm.FilePath);
+            if (_vm.WizardType == AddEditWizardType.Add)
+                open.StartInfo = new ProcessStartInfo(_vm.FloorPlanPath);
+            else
+                open.StartInfo = new ProcessStartInfo(_vm.FilePath);
             open.Start();
         }
     }
