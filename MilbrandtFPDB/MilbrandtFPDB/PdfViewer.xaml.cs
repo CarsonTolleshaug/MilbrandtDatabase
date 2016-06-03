@@ -59,10 +59,7 @@ namespace MilbrandtFPDB
             get { return _pdfFilePath; }
             set
             {
-                if (_pdfFilePath != value)
-                {
-                    DrawPDF(value);
-                }
+                DrawPDF(value);
             }
         }
 
@@ -84,6 +81,16 @@ namespace MilbrandtFPDB
             {
                 winFormsHost.Visibility = System.Windows.Visibility.Hidden;
                 //viewer.Visibility = System.Windows.Visibility.Hidden;
+            }
+        }
+
+        public void ReleaseDocument()
+        {
+            PdfDocument doc = viewer.Document;
+            if (doc != null)
+            {
+                viewer.Document = null;
+                doc.Dispose();
             }
         }
     }

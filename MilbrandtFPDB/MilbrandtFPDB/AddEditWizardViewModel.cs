@@ -20,6 +20,7 @@ namespace MilbrandtFPDB
         private SitePlan _entry;
         private DataGridViewModel _mainVM;
         private string _filepath;
+        private string _tempPath;
 
         // for add mode only
         private string _floorPlanPath;
@@ -294,6 +295,37 @@ namespace MilbrandtFPDB
                 // Save the new combined document in the previously generated FilePath location
                 outputDoc.Save(FilePath);
             }
+        }
+
+        public string BuildTempCompositePdf()
+        {
+            string mainPdf = WizardType == AddEditWizardType.Add ? FloorPlanPath : FilePath;
+            if (!File.Exists(mainPdf))
+                return null;
+
+            if (!File.Exists(_tempPath))
+            {
+                // make a new temp file
+                _tempPath = Path.Combine(Path.GetTempPath(), "mb_fpdb.pdf");
+            }
+
+            // Create output doc
+            PdfSharp.Pdf.PdfDocument outputDoc = new PdfSharp.Pdf.PdfDocument();
+
+            // Add floor plan pages
+            AddPagesFromFileToDoc(mainPdf, outputDoc);
+
+            // Add additional pdfs
+            foreach (KeyValueWrapper pdfPath in AdditionalPdfPaths)
+            {
+                if (File.Exists(pdfPath.Value))
+                    AddPagesFromFileToDoc(pdfPath.Value, outputDoc);
+            }
+
+            // Save the new combined document in the previously generated temp location
+            outputDoc.Save(_tempPath);
+
+            return _tempPath;
         }
 
         private void AddPagesFromFileToDoc(string inputFilename, PdfSharp.Pdf.PdfDocument outputDoc)

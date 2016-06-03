@@ -17,6 +17,7 @@ namespace MilbrandtFPDB
         private const string VALUE_ANY = "(Any)";
         private ObservableCollection<SitePlan> entries = new ObservableCollection<SitePlan>();
         private Dictionary<string, ObservableCollection<string>> _availableValues = new Dictionary<string,ObservableCollection<string>>();
+        private SitePlan _selectedEntry;
 
         public DataGridViewModel()
         {
@@ -86,10 +87,16 @@ namespace MilbrandtFPDB
 
             if (refreshLists)
             {
+                // clear filters
+                ClearFilters();
+
                 // update all available values
                 RefreshDisplay();
                 UpdateAvailableValues();
             }
+
+            if (DisplayedEntries.Contains(sp))
+                SelectedEntry = sp;
         }
 
         public void RemoveEntry(SitePlan sp)
@@ -101,6 +108,14 @@ namespace MilbrandtFPDB
                 // update all available values
                 //UpdateAvailableValues();
                 //RefreshDisplay();
+            }
+        }
+
+        public void ClearFilters()
+        {
+            foreach (string parameter in SelectedValues.Keys)
+            {
+                SelectedValues[parameter].Value = VALUE_ANY;
             }
         }
 
@@ -134,9 +149,9 @@ namespace MilbrandtFPDB
                     }
                     else if (property == "Date")
                     {
-                        if (SelectedValues[property].Value != VALUE_ANY)
+                        if (SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != sp.Date.Year.ToString())
                         {
-                            match = SelectedValues[property].Value == sp.Date.Year.ToString();
+                            match = false;
                         }
                     }
                     else if (property != "FilePath" && SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != SitePlan.GetProperty(sp, property))
@@ -271,6 +286,19 @@ namespace MilbrandtFPDB
         {
             get;
             private set;
+        }
+
+        public SitePlan SelectedEntry
+        {
+            get { return _selectedEntry; }
+            set
+            {
+                if (_selectedEntry != value)
+                {
+                    _selectedEntry = value;
+                    OnPropertyChanged("SelectedEntry");
+                }
+            }
         }
 
         public Collection<DatabaseType> DatabaseTypes

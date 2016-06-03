@@ -38,7 +38,7 @@ namespace MilbrandtFPDB
                 // Prevent the properties panel from being disabled 
                 // due to floor plan being blank
                 propertiesPanel.Style = null;
-                UpdatePdfViewer(_vm.FilePath);
+                UpdatePdfViewer();
             }
 
             InitializeUI();
@@ -57,19 +57,18 @@ namespace MilbrandtFPDB
 
         private void VMPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "FilePath")
-                UpdatePdfViewer(_vm.FilePath);
-            else if (e.PropertyName == "FloorPlanPath")
-                UpdatePdfViewer(_vm.FloorPlanPath);
+            if (e.PropertyName == "FilePath" || e.PropertyName == "FloorPlanPath")
+                UpdatePdfViewer();
         }
 
-        private void UpdatePdfViewer(string path)
+        private void UpdatePdfViewer()
         {
             try
             {
-                pdfViewer.PdfFilePath = path;
+                pdfViewer.ReleaseDocument();
+                pdfViewer.PdfFilePath = _vm.BuildTempCompositePdf();
             }
-            catch
+            catch 
             {
                 pdfViewer.PdfFilePath = "";
             }
@@ -171,6 +170,7 @@ namespace MilbrandtFPDB
                 {
                     int index = (int)((sender as Button).Tag);
                     _vm.AdditionalPdfPaths[index].Value = ofd.FileName;
+                    UpdatePdfViewer();
                 }
             }
         }
@@ -252,7 +252,6 @@ namespace MilbrandtFPDB
             Button removeBtn = new Button();
             removeBtn.Content = "X";
             removeBtn.Click += removeBtn_Click;
-            removeBtn.Margin = new Thickness(0, 0, 5, 0);
             removeBtn.Tag = index;
             removeBtn.SetValue(Grid.ColumnProperty, 3);
             removeBtn.VerticalAlignment = System.Windows.VerticalAlignment.Center;
@@ -299,7 +298,20 @@ namespace MilbrandtFPDB
                 open.StartInfo = new ProcessStartInfo(_vm.FloorPlanPath);
             else
                 open.StartInfo = new ProcessStartInfo(_vm.FilePath);
-            open.Start();
+
+            try
+            {
+                open.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable to open file");
+            }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            pdfViewer.ReleaseDocument();
         }
     }
 }

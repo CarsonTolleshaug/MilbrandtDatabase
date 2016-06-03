@@ -13,7 +13,7 @@
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
-        <DataGrid x:Name="dgSitePlans" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CanUserAddRows="False" AutoGenerateColumns="True" ItemsSource="{Binding DisplayedEntries}" SelectionChanged="dgSitePlans_SelectionChanged" IsReadOnly="True" AutoGeneratingColumn="dgSitePlans_AutoGeneratingColumn" />
+        <DataGrid x:Name="dgSitePlans" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CanUserAddRows="False" AutoGenerateColumns="True" ItemsSource="{Binding DisplayedEntries}" SelectedItem="{Binding Path=SelectedEntry, Mode=TwoWay}" SelectionChanged="dgSitePlans_SelectionChanged" IsReadOnly="True" AutoGeneratingColumn="dgSitePlans_AutoGeneratingColumn" />
 
         <Rectangle Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="15" >
             <Rectangle.Fill>
@@ -41,7 +41,7 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Label Content="Dataset:" VerticalAlignment="Center"/>
+            <Label Content="Database:" VerticalAlignment="Center"/>
             <ComboBox x:Name="cbDatabase" ItemsSource="{Binding DatabaseTypes}" SelectedItem="{Binding Mode=TwoWay, Path=SelectedDatabase}" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="7" Width="120" IsTabStop="False"/>
         </StackPanel>
 

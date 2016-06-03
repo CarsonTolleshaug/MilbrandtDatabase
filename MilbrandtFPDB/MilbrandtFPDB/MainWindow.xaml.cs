@@ -134,6 +134,7 @@ namespace MilbrandtFPDB
 
             // Add header to column
             e.Column.Header = sp;
+            e.Column.MinWidth = 65;
         }
 
         private void FilterSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -143,7 +144,14 @@ namespace MilbrandtFPDB
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            LaunchAddEditWizard(AddEditWizardType.Add);
+            bool? result = LaunchAddEditWizard(AddEditWizardType.Add);
+
+            if (result.HasValue && result.Value)
+            {
+                dgSitePlans.Focus();
+                if (_vm.SelectedEntry != null)
+                    dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
+            }
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
@@ -151,7 +159,7 @@ namespace MilbrandtFPDB
             LaunchAddEditWizard(AddEditWizardType.Edit);
         }
 
-        private void LaunchAddEditWizard(AddEditWizardType type)
+        private bool? LaunchAddEditWizard(AddEditWizardType type)
         {
             AddEditWizard wizard;
 
@@ -160,12 +168,12 @@ namespace MilbrandtFPDB
             else
             {
                 if (dgSitePlans.SelectedItems.Count != 1)
-                    return;
+                    return null;
 
                 wizard = new AddEditWizard(type, _vm, (SitePlan)dgSitePlans.SelectedItem);
             }
 
-            wizard.ShowDialog();
+            return wizard.ShowDialog();
         }
 
         private void btnSettings_Click(object sender, RoutedEventArgs e)
