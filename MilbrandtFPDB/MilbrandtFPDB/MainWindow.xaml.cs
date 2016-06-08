@@ -67,6 +67,11 @@ namespace MilbrandtFPDB
             // only one item can be selected for remove
             btnRemove.IsEnabled = dgSitePlans.SelectedItems.Count == 1;
 
+            if (dgSitePlans.SelectedItems.Count > 1)
+                btnEdit.Content = "Edit Entries";
+            else
+                btnEdit.Content = "Edit Entry";
+
             try
             {
                 UpdatePreview((dgSitePlans.SelectedItem as SitePlan).FilePath);
@@ -132,18 +137,6 @@ namespace MilbrandtFPDB
             selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
             cb.SetBinding(ComboBox.SelectedItemProperty, selectBinding);
 
-            // Setting ComboBox Color (Filtering)
-            Style colHeaderStyle = new System.Windows.Style(typeof(ComboBox));
-            Binding filterBinding = new Binding("SelectedValues[" + header + "].Value");
-            filterBinding.Source = _vm;
-            filterBinding.Converter = new ValueToIsAnyBool();
-            DataTrigger filterTrigger = new DataTrigger();
-            filterTrigger.Binding = filterBinding;
-            filterTrigger.Value = false;
-            filterTrigger.Setters.Add(new Setter(ComboBox.BackgroundProperty, (LinearGradientBrush)FindResource("ColumnFilterBrush")));
-            colHeaderStyle.Triggers.Add(filterTrigger);
-            cb.Style = colHeaderStyle;
-
             // Add comboBox to header
             sp.Children.Add(cb);
 
@@ -155,6 +148,19 @@ namespace MilbrandtFPDB
             while (MilbrandtFPDB.Properties.Settings.Default.ColumnWidths.Count <= _generatedColumns)
                 MilbrandtFPDB.Properties.Settings.Default.ColumnWidths.Add("Auto");
             e.Column.Width = StringToColumnWidthConverter.ConvertToWidth(MilbrandtFPDB.Properties.Settings.Default.ColumnWidths[_generatedColumns]);
+
+            // Setting ComboBox Color (Filtering)
+            Style colHeaderStyle = new System.Windows.Style(typeof(ComboBox), cb.Style);
+            Binding filterBinding = new Binding("SelectedValues[" + header + "].Value");
+            filterBinding.Source = _vm;
+            filterBinding.Converter = new ValueToIsAnyBool();
+            DataTrigger filterTrigger = new DataTrigger();
+            filterTrigger.Binding = filterBinding;
+            filterTrigger.Value = false;
+            filterTrigger.Setters.Add(new Setter(ComboBox.BackgroundProperty, (LinearGradientBrush)FindResource("ColumnFilterBrush")));
+            colHeaderStyle.Triggers.Add(filterTrigger);
+            cb.Template = (ControlTemplate)FindResource("DataGridHeaderComboBoxStyle");
+            cb.Style = colHeaderStyle;
 
             // Set default sorting
             if (header == "ProjectNumber")

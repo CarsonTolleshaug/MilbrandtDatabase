@@ -14,7 +14,7 @@ namespace MilbrandtFPDB
 
         private MainWindowViewModel _mainVM;
         private IEnumerable<SitePlan> _entries;
-        private const string VALUE_VARIED = "<varies>";
+        public const string VALUE_VARIED = "<varies>";
 
         public BatchEditWizardViewModel(MainWindowViewModel mainVM, IEnumerable<SitePlan> entries, 
             Dictionary<string, ObservableCollection<string>> availableValues, Dictionary<string, KeyValueWrapper> propertyValues,

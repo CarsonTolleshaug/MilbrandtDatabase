@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Collections.ObjectModel;
+using System.Windows.Controls.Primitives;
 
 namespace MilbrandtFPDB
 {
@@ -22,6 +23,7 @@ namespace MilbrandtFPDB
     public partial class EntryPropertiesPanel : UserControl
     {
         private EntryPropertiesPanelViewModel _vm;
+        private string _dpWatermark = "Select a date";
 
         public EntryPropertiesPanel()
         {
@@ -46,6 +48,12 @@ namespace MilbrandtFPDB
         public Dictionary<string, KeyValueWrapper> PropertyDisplayNames
         {
             get { return _vm.PropertyDisplayNames; }
+        }
+
+        public string DatePickerWatermark
+        {
+            get { return _dpWatermark; }
+            set { _dpWatermark = value; }
         }
 
         private void InitializeUI()
@@ -92,12 +100,8 @@ namespace MilbrandtFPDB
                 dp.SetValue(Grid.ColumnProperty, 1);
                 dp.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
 
-                // Set binding for Text
-                Binding selectBinding = new Binding("PropertyValues[Date].Value");
-                selectBinding.Source = _vm;
-                selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
-                selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-                dp.SetBinding(DatePicker.TextProperty, selectBinding);
+                // Text binding has to be done after load
+                dp.Loaded += dp_Loaded;
 
                 // Add DatePicker to grid
                 grid.Children.Add(dp);
@@ -129,11 +133,50 @@ namespace MilbrandtFPDB
             return grid;
         }
 
+        void dp_Loaded(object sender, RoutedEventArgs e)
+        {
+            var dp = sender as DatePicker;
+            if (dp == null) return;
+
+            var tb = GetChildOfType<DatePickerTextBox>(dp);
+            if (tb == null) return;
+
+            // Set binding for Text
+            Binding selectBinding = new Binding("PropertyValues[Date].Value");
+            selectBinding.Source = _vm;
+            selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
+            selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            //dp.SetBinding(DatePicker.TextProperty, selectBinding);
+            tb.SetBinding(DatePickerTextBox.TextProperty, selectBinding);
+
+            // Set the watermark (this allows the batch edit window to show "<Varies>"
+            var wm = tb.Template.FindName("PART_Watermark", tb) as ContentControl;
+            if (wm == null) return;
+
+            wm.Content = DatePickerWatermark;
+
+        }
+
         private void DatePickerDateChanged(object sender, SelectionChangedEventArgs e)
         {
             DatePicker dp = (sender as DatePicker);
             if (dp != null && dp.SelectedDate.HasValue)
                 _vm.PropertyValues["Date"].Value = dp.SelectedDate.Value.ToShortDateString();
+        }
+
+        // Helper method used to find the DatePickerTextBox child of the DatePicker
+        public static T GetChildOfType<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+
+                var result = (child as T) ?? GetChildOfType<T>(child);
+                if (result != null) return result;
+            }
+            return null;
         }
     }
 }

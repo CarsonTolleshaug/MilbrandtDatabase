@@ -69,6 +69,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PDFsharp.1.50.4000-beta3b\lib\net20\PdfSharp.Charting.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -95,6 +96,9 @@
     <Compile Include="AddEditWizard.xaml.cs">
       <DependentUpon>AddEditWizard.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI Components\EntryPropertiesPanel.xaml.cs">
+      <DependentUpon>EntryPropertiesPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\AddEditWizardViewModel.cs" />
     <Compile Include="BatchEditWizard.xaml.cs">
       <DependentUpon>BatchEditWizard.xaml</DependentUpon>
@@ -102,9 +106,6 @@
     <Compile Include="ViewModels\BatchEditWizardViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Helpers\DBHelper.cs" />
-    <Compile Include="UI Components\EntryPropertiesPanel.xaml.cs">
-      <DependentUpon>EntryPropertiesPanel.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI Components\EntryPropertiesPanelViewModel.cs" />
     <Compile Include="Helpers\JobListReader.cs" />
     <Compile Include="UI Components\PdfViewer.xaml.cs">
@@ -126,10 +127,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI Components\EntryPropertiesPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -142,6 +139,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UI Components\EntryPropertiesPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI Components\PdfViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

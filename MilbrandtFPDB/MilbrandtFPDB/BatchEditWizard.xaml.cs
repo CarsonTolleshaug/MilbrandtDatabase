@@ -26,6 +26,8 @@ namespace MilbrandtFPDB
             InitializeComponent();
             _vm = new BatchEditWizardViewModel(parentVM, entries, propertiesPanel.AvailableValues, propertiesPanel.PropertyValues, propertiesPanel.PropertyDisplayNames);
             DataContext = _vm;
+
+            propertiesPanel.DatePickerWatermark = BatchEditWizardViewModel.VALUE_VARIED;
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
