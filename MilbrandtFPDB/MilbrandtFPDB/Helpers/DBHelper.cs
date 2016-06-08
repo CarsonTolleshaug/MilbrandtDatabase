@@ -12,17 +12,12 @@ namespace MilbrandtFPDB
 {
     public enum DatabaseType { Flat, SingleFamily, Townhome, Carriage }
 
+
+    /// <summary>
+    /// A static class which handles saving and loading data to and from dataset files
+    /// </summary>
     public static class DBHelper
     {
-
-        public static string GetStandardPdfFilename(string projectNumber, string plan)
-        {
-            // Add underscore for single family
-            string typeStr = Type == DatabaseType.SingleFamily ? "Single_Family" : Type.ToString();
-
-            return Path.Combine(Settings.PlansRootDirectory, typeStr, projectNumber, plan + ".pdf");
-        }
-
         private static string DataFile
         {
             get
@@ -45,14 +40,6 @@ namespace MilbrandtFPDB
             set
             {
                 dbType = value;
-                //if (value == DatabaseType.Flat)
-                //    DataFile = "flat.dat";
-                //if (value == DatabaseType.SingleFamily)
-                //    DataFile = "singlefamily.dat";
-                //if (value == DatabaseType.Townhome)
-                //    DataFile = "townhome.dat";
-                //if (value == DatabaseType.Carriage)
-                //    DataFile = "carriage.dat";
             }
             get
             {
@@ -175,27 +162,5 @@ namespace MilbrandtFPDB
             }
             return entryList;
         }
-
-        //static public string WriteProjectNumber(string pn)
-        //{
-        //    //removes the 19 or 20 from the project number when displaying it
-        //    if (pn.Length >= 6)
-        //        return pn.Remove(0, 2);
-        //    else
-        //        return pn;
-        //}
-
-        //static public string ReadProjectNumber(string pn)
-        //{
-        //    if (pn.Length >= 6)
-        //        return pn;
-        //    //adds the 19 or 20 to the begining of the project number when storing it
-        //    //if it begins with 80 or above use the prefix 19 (i.e. 1987)
-        //    if (pn[0] >= '8')
-        //        return pn.Insert(0, "19");
-        //    else //if it begins with lower than 80 use the prefix 20 (i.e. 2012)
-        //        return pn.Insert(0, "20");
-        //}
-
     }
 }

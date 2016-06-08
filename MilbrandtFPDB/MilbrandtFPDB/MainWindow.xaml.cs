@@ -20,26 +20,46 @@ using System.ComponentModel;
 namespace MilbrandtFPDB
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// ************************ MAIN WINDOW ************************
+    /// Contains the main UI elements for the application. Provides
+    /// ability to launch other windows. UI Elements include:
+    ///     + DataGrid
+    ///         - Contains the list of site plan entries, manages
+    ///           filtering list via combo boxes in headers
+    ///     + Pdf Viewer
+    ///         - Provides a preview of the currently selected site
+    ///           plan's PDF file
+    ///     + Menu Items
+    ///         - Add Entry (launches AddEditWizard)
+    ///         - Edit Entry (launches AddEditWizard if only one item
+    ///           is selected, otherwise launches BatchEditWizard)
+    ///         - Remove Entry
+    ///         - Change Database (combo box)
+    ///         - Open PDF (opens the currently displayed previewing
+    ///           pdf file in default external app)
+    ///         - Settings (launches SettingsWindow)
+    /// The code here is simply to handle completely UI level things 
+    /// (like buttons being enabled) or to create UI elements. All 
+    /// the logic code is contained either in the view model 
+    /// (MainWindowViewModel) or the model (SitePlan)
+    /// *************************************************************
     /// </summary>
     public partial class MainWindow : Window
     {
-        private DataGridViewModel _vm;
+        private MainWindowViewModel _vm;
         private int _generatedColumns = 0;
 
         public MainWindow()
         {
             InitializeComponent();
-            _vm = new DataGridViewModel();
+            _vm = new MainWindowViewModel();
             DataContext = _vm;
         }
 
-        private void UpdatePreview(string file)
-        {
-            pdfViewer.PdfFilePath = file;
-        }
 
-        private void dgSitePlans_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        #region DataGrid
+
+        private void DataGridSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Allow multiple selections for open & edit
             btnEdit.IsEnabled = btnOpen.IsEnabled = dgSitePlans.SelectedItems.Count > 0;
@@ -57,40 +77,17 @@ namespace MilbrandtFPDB
             }
         }
 
-        private void btnOpen_Click(object sender, RoutedEventArgs e)
+
+        /// <summary>
+        /// This is called when the data grid begins generating columns for 
+        /// the public properties of SitePlan. This handler gives us control
+        /// over the creation of these columns and allows us to add the
+        /// filter combo boxes in the header, as well as other neccessary
+        /// tweaks.
+        /// </summary>
+        private void DataGridAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
-            foreach (SitePlan sp in dgSitePlans.SelectedItems)
-            {
-                try
-                {
-                    sp.Open();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Unable to open file:\n" + ex.Message);
-                }
-
-            }
-        }
-
-        private void btnRemove_Click(object sender, RoutedEventArgs e)
-        {
-            if (dgSitePlans.SelectedItems.Count != 1)
-                return;
-
-            MessageBoxResult result = MessageBox.Show("Are you sure you want to delete this entry?\n(There is no undo)", "Remove Entry", MessageBoxButton.OKCancel);
-            if (result == MessageBoxResult.OK)
-            {
-                SitePlan sp = dgSitePlans.SelectedItem as SitePlan;
-                if (sp != null) // totally unneccisary, but just a precaution anyway
-                {
-                    _vm.RemoveEntry(sp);
-                }
-            }
-        }
-
-        private void dgSitePlans_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
-        {
+            // the name of the column
             string header = e.PropertyName;
 
             // FilePath should not have a column
@@ -127,13 +124,25 @@ namespace MilbrandtFPDB
             sourceBinding.Source = _vm;
             sourceBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
             cb.SetBinding(ComboBox.ItemsSourceProperty, sourceBinding);
-            
+
             // Set binding for SelectedItem
             Binding selectBinding = new Binding("SelectedValues[" + header + "].Value");
             selectBinding.Source = _vm;
             selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
             selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
             cb.SetBinding(ComboBox.SelectedItemProperty, selectBinding);
+
+            // Setting ComboBox Color (Filtering)
+            Style colHeaderStyle = new System.Windows.Style(typeof(ComboBox));
+            Binding filterBinding = new Binding("SelectedValues[" + header + "].Value");
+            filterBinding.Source = _vm;
+            filterBinding.Converter = new ValueToIsAnyBool();
+            DataTrigger filterTrigger = new DataTrigger();
+            filterTrigger.Binding = filterBinding;
+            filterTrigger.Value = false;
+            filterTrigger.Setters.Add(new Setter(ComboBox.BackgroundProperty, (LinearGradientBrush)FindResource("ColumnFilterBrush")));
+            colHeaderStyle.Triggers.Add(filterTrigger);
+            cb.Style = colHeaderStyle;
 
             // Add comboBox to header
             sp.Children.Add(cb);
@@ -147,20 +156,6 @@ namespace MilbrandtFPDB
                 MilbrandtFPDB.Properties.Settings.Default.ColumnWidths.Add("Auto");
             e.Column.Width = StringToColumnWidthConverter.ConvertToWidth(MilbrandtFPDB.Properties.Settings.Default.ColumnWidths[_generatedColumns]);
 
-            // Setting Column Color (Filtering)
-            Binding filterBinding = new Binding("SelectedValues[" + header + "].Value");
-            filterBinding.Source = _vm;
-            filterBinding.Converter = new ValueToIsAnyBool();
-            Style colHeaderStyle = new System.Windows.Style(typeof(ComboBox));
-            DataTrigger filterTrigger = new DataTrigger()
-            {
-                Binding = filterBinding,
-                Value = false
-            };
-            filterTrigger.Setters.Add(new Setter(ComboBox.BackgroundProperty, (LinearGradientBrush)FindResource("ColumnFilterBrush")));
-            colHeaderStyle.Triggers.Add(filterTrigger);
-            cb.Style = colHeaderStyle;
-
             // Set default sorting
             if (header == "ProjectNumber")
                 SortDataGridByProjectNumber(ListSortDirection.Ascending, e.Column);
@@ -168,9 +163,105 @@ namespace MilbrandtFPDB
             _generatedColumns++;
         }
 
+
+        /// <summary>
+        /// This is called when one of the filters is changed. We let the view model
+        /// handle the filtering, we just need to tell it to refresh.
+        /// </summary>
         private void FilterSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             _vm.RefreshDisplay();
+        }
+
+
+        /// <summary>
+        /// This is called when the user clicks the header of a column in the
+        /// DataGrid to sort the entries by that column. This handler gives
+        /// us the ability to alter the sorting of ProjectNumber. Because the
+        /// project number's first two digits are the last two digits of the
+        /// year, we want to display those which occur in 1900's to come before
+        /// the ones in the 2000's. Ex: 9810 should come before 0310
+        /// </summary>
+        private void DataGridSorting(object sender, DataGridSortingEventArgs e)
+        {
+            string header = (e.Column.Header as StackPanel).Tag.ToString();
+            if (header == "ProjectNumber")
+            {
+                // prevent the built-in sort from sorting
+                e.Handled = true;
+
+                ListSortDirection direction = (e.Column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
+                SortDataGridByProjectNumber(direction, e.Column);
+            }
+        }
+
+
+        /// <summary>
+        /// This is a helper method used to sort the DataGrid entries by ProjectNumber
+        /// using a custom comparer to accomplish the sorting order we want.
+        /// </summary>
+        /// <param name="direction">The direction to sort (Ascending/Decending)</param>
+        /// <param name="col">A reference to the ProjectNumber column</param>
+        private void SortDataGridByProjectNumber(ListSortDirection direction, DataGridColumn col)
+        {
+            System.Collections.IComparer comparer = null;
+
+            //use a ListCollectionView to do the sort.
+            ListCollectionView lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(dgSitePlans.ItemsSource);
+
+            col.SortDirection = direction;
+            comparer = new ProjectNumberSort(direction);
+
+            //apply the sort
+            lcv.CustomSort = comparer;
+        }
+
+
+        #endregion
+
+
+        #region Pdf Viewer
+
+        private void UpdatePreview(string file)
+        {
+            pdfViewer.PdfFilePath = file;
+        }
+
+        #endregion
+
+
+        #region Menu Items
+
+        private void btnOpen_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (SitePlan sp in dgSitePlans.SelectedItems)
+            {
+                try
+                {
+                    sp.Open();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Unable to open file:\n" + ex.Message);
+                }
+
+            }
+        }
+
+        private void btnRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgSitePlans.SelectedItems.Count != 1)
+                return;
+
+            MessageBoxResult result = MessageBox.Show("Are you sure you want to delete this entry?\n(There is no undo)", "Remove Entry", MessageBoxButton.OKCancel);
+            if (result == MessageBoxResult.OK)
+            {
+                SitePlan sp = dgSitePlans.SelectedItem as SitePlan;
+                if (sp != null) // totally unneccisary, but just a precaution anyway
+                {
+                    _vm.RemoveEntry(sp);
+                }
+            }
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
@@ -235,6 +326,8 @@ namespace MilbrandtFPDB
             }
         }
 
+        #endregion
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             _vm.SaveEntries();
@@ -246,33 +339,5 @@ namespace MilbrandtFPDB
                     StringToColumnWidthConverter.ConvertToString(dgSitePlans.Columns[i].Width);
             }
         }
-
-        private void dgSitePlans_Sorting(object sender, DataGridSortingEventArgs e)
-        {
-            string header = (e.Column.Header as StackPanel).Tag.ToString();
-            if (header == "ProjectNumber")
-            {
-                // prevent the built-in sort from sorting
-                e.Handled = true;
-
-                ListSortDirection direction = (e.Column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
-                SortDataGridByProjectNumber(direction, e.Column);
-            }
-        }
-
-        private void SortDataGridByProjectNumber(ListSortDirection direction, DataGridColumn col)
-        {
-            System.Collections.IComparer comparer = null;
-
-            //use a ListCollectionView to do the sort.
-            ListCollectionView lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(dgSitePlans.ItemsSource);
-
-            col.SortDirection = direction;
-            comparer = new ProjectNumberSort(direction);
-
-            //apply the sort
-            lcv.CustomSort = comparer;
-        }
-
     }
 }

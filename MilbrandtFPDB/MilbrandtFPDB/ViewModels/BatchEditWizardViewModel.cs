@@ -12,11 +12,11 @@ namespace MilbrandtFPDB
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private DataGridViewModel _mainVM;
+        private MainWindowViewModel _mainVM;
         private IEnumerable<SitePlan> _entries;
         private const string VALUE_VARIED = "<varies>";
 
-        public BatchEditWizardViewModel(DataGridViewModel mainVM, IEnumerable<SitePlan> entries, 
+        public BatchEditWizardViewModel(MainWindowViewModel mainVM, IEnumerable<SitePlan> entries, 
             Dictionary<string, ObservableCollection<string>> availableValues, Dictionary<string, KeyValueWrapper> propertyValues,
             Dictionary<string, KeyValueWrapper> propertyDisplayNames)
         {

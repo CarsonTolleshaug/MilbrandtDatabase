@@ -21,7 +21,7 @@ namespace MilbrandtFPDB
     {
         private BatchEditWizardViewModel _vm;
 
-        public BatchEditWizard(DataGridViewModel parentVM, IEnumerable<SitePlan> entries)
+        public BatchEditWizard(MainWindowViewModel parentVM, IEnumerable<SitePlan> entries)
         {
             InitializeComponent();
             _vm = new BatchEditWizardViewModel(parentVM, entries, propertiesPanel.AvailableValues, propertiesPanel.PropertyValues, propertiesPanel.PropertyDisplayNames);

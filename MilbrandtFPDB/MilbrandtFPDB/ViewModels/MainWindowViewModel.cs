@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace MilbrandtFPDB
 {
-    public class DataGridViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
         
@@ -19,7 +19,7 @@ namespace MilbrandtFPDB
         private Dictionary<string, ObservableCollection<string>> _availableValues = new Dictionary<string,ObservableCollection<string>>();
         private SitePlan _selectedEntry;
 
-        public DataGridViewModel()
+        public MainWindowViewModel()
         {
             DisplayedEntries = new ObservableCollection<SitePlan>();
             LoadHeaders();

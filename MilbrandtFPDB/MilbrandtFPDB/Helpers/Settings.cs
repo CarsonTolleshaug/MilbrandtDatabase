@@ -10,29 +10,20 @@ using System.Text.RegularExpressions;
 
 namespace MilbrandtFPDB
 {
+    /// <summary>
+    /// A static class used to manage saving and loading settings
+    /// from the global settings file.
+    /// </summary>
     public static class Settings
     {
         #region Settings File Locations
-        private static readonly string localSettingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FPDatabase"); //<- Defualt System Directory 
-        private static readonly string localSettingsFileName = "settings.xml";
         private static readonly string globalSettingsDirectory = "Global_Settings";
         private static readonly string globalSettingsFileName = "global_settings.xml";
 
-        public static string LocalSettingsDirectory
-        {
-            get
-            {
-                return localSettingsDirectory;
-            }
-        }
-        public static string LocalSettingsFile
-        {
-            get
-            {
-                return Path.Combine(localSettingsDirectory, localSettingsFileName);
-            }
-        }
-
+        /// <summary>
+        /// The directory containing the global settings file.
+        /// Note: path may be relative
+        /// </summary>
         public static string GlobalSettingsDirectory
         {
             get
@@ -40,6 +31,11 @@ namespace MilbrandtFPDB
                 return globalSettingsDirectory;
             }
         }
+
+        /// <summary>
+        /// The complete path to the global settings file including file name.
+        /// Note: path may be relative
+        /// </summary>
         public static string GlobalSettingsFile
         {
             get
@@ -58,8 +54,17 @@ namespace MilbrandtFPDB
         private const string DEFAULT_PLAN_REGEX = @"(?(.*Plan\s*\d+)(?:.*Plan\s*)(?<digits>\d+)|(?:.*)(?<digits>\d{4}))(?:(?:.*?[\W_]+)*?(?<suffix>DL|DB|\.2))?";
         private static string planRegex = DEFAULT_PLAN_REGEX;
 
+        // This is actually what loads all the settings initially. 
+        // This is lazy loading, and will not actually load until 
+        // some function or property of this class is called.
         private static bool globalInitialized = ReadGlobalSettings();
 
+        /// <summary>
+        /// A fully qualified path to the Directory to save all 
+        /// generated PDF files in. This folder will contain 
+        /// sub-folders for each of the datasets, which will 
+        /// each also have sub-folders for project numbers.
+        /// </summary>
         public static string PlansRootDirectory
         {
             get { return plansRootDirectory; }
@@ -72,6 +77,10 @@ namespace MilbrandtFPDB
             }
         }
 
+        /// <summary>
+        /// A fully qualified path to the jobs.dat file 
+        /// created/used by the JobsList app.
+        /// </summary>
         public static string JobListFile
         {
             get { return jobListFile; }
@@ -84,6 +93,12 @@ namespace MilbrandtFPDB
             }
         }
 
+        /// <summary>
+        /// The amount to increment each value range by
+        /// in the Square ft. column filter drop down.
+        /// Ex: setting this to 250 will result in ranges:
+        /// 0 - 250, 251 - 500, 501 - 750, ...
+        /// </summary>
         public static int SqftRangeStep
         {
             get { return sqftRangeStep; }
@@ -96,6 +111,13 @@ namespace MilbrandtFPDB
             }
         }
 
+        /// <summary>
+        /// A regular expression (.NET syntax) that parses
+        /// out the Plan number from the filename of the
+        /// floor plan .pdf file, storing the number in a 
+        /// group called "digits" and any preserved suffix 
+        /// (DL, DB, .2, etc) in a group called "suffix".
+        /// </summary>
         public static string PlanParseRegex
         {
             get { return planRegex; }
@@ -108,6 +130,10 @@ namespace MilbrandtFPDB
             }
         }
 
+        /// <summary>
+        /// Resets the PlanParseRegex to its original value
+        /// stored in code as a constant.
+        /// </summary>
         public static void ResetPlanRegexToDefault()
         {
             PlanParseRegex = DEFAULT_PLAN_REGEX;
@@ -154,51 +180,6 @@ namespace MilbrandtFPDB
 
         #endregion
 
-
-        #region Local Settings
-
-        private static Dictionary<string, WindowSetting> _windowSettings = new Dictionary<string,WindowSetting>();
-        private static Dictionary<string, int> _columnWidths = new Dictionary<string, int>();
-        private static bool _localInitialized = ReadLocalSettings();
-
-        public static Dictionary<string, WindowSetting> WindowSettings { get { return _windowSettings; } }
-        public static Dictionary<string, int> ColumnWidths { get { return _columnWidths; } }
-
-        public static void SaveLocalSettings()
-        {
-            if (!Directory.Exists(LocalSettingsDirectory))
-                Directory.CreateDirectory(LocalSettingsDirectory);
-
-            using (XmlWriter writer = XmlWriter.Create(LocalSettingsFile, new XmlWriterSettings() { Indent = true }))
-            {
-                writer.WriteStartDocument();
-                writer.WriteStartElement("Settings");
-
-                // Window Settings
-                foreach (WindowSetting ws in WindowSettings.Values)
-                    ws.WriteSelfToXml(writer);
-
-                // DataGrid Column Width settings
-                writer.WriteStartElement("ColumnWidths");
-                foreach (string columnName in ColumnWidths.Keys)
-                {
-                    writer.WriteElementString(columnName, ColumnWidths[columnName].ToString());
-                }
-                writer.WriteEndElement();
-
-                writer.WriteEndElement();
-                writer.WriteEndDocument();
-                writer.Close();
-            }
-        }
-
-        public static bool ReadLocalSettings()
-        {
-            return true;
-        }
-
-        #endregion
-
         private static string ReadValue(string name, XElement root)
         {
             XElement elm = root.Element(name);
@@ -215,32 +196,20 @@ namespace MilbrandtFPDB
                 return temp;
             return 0;
         }
-    }
 
-    public class WindowSetting
-    {
-        public string Name { get; set; }
-        public double Width { get; set; }
-        public double Height { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public bool Maximized { get; set; }
-        public int? SplitterPosition { get; set; }
 
-        public void WriteSelfToXml(XmlWriter writer)
+        /// <summary>
+        /// Gets the fully qualified path of the standard save location for generating a pdf file
+        /// </summary>
+        /// <param name="projectNumber">The project number of the SitePlan</param>
+        /// <param name="plan">The plan number of the SitePlan</param>
+        /// <returns>The path for the pdf file</returns>
+        public static string GetStandardPdfFilename(string projectNumber, string plan)
         {
-            writer.WriteStartElement("Window");
-            writer.WriteAttributeString("Name", Name);
+            // Add underscore for single family
+            string typeStr = DBHelper.Type == DatabaseType.SingleFamily ? "Single_Family" : DBHelper.Type.ToString();
 
-            writer.WriteElementString("Width", Width.ToString());
-            writer.WriteElementString("Height", Height.ToString());
-            writer.WriteElementString("X", X.ToString());
-            writer.WriteElementString("Y", Y.ToString());
-            writer.WriteElementString("Maximized", Maximized.ToString());
-            if (SplitterPosition.HasValue)
-                writer.WriteElementString("SplitterPosition", SplitterPosition.Value.ToString());
-
-            writer.WriteEndElement();
+            return Path.Combine(PlansRootDirectory, typeStr, projectNumber, plan + ".pdf");
         }
     }
 }

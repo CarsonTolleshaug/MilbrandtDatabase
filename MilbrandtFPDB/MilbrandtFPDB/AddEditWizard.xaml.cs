@@ -25,7 +25,7 @@ namespace MilbrandtFPDB
     {
         private AddEditWizardViewModel _vm;
 
-        public AddEditWizard(AddEditWizardType type, DataGridViewModel parentVM, SitePlan entry = null)
+        public AddEditWizard(AddEditWizardType type, MainWindowViewModel parentVM, SitePlan entry = null)
         {
             InitializeComponent();
 

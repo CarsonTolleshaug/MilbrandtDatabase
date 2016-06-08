@@ -18,14 +18,14 @@ namespace MilbrandtFPDB
 
         private AddEditWizardType _type;
         private SitePlan _entry;
-        private DataGridViewModel _mainVM;
+        private MainWindowViewModel _mainVM;
         private string _filepath;
         private string _tempPath;
 
         // for add mode only
         private string _floorPlanPath;
 
-        public AddEditWizardViewModel(AddEditWizardType type, DataGridViewModel mainVM, SitePlan entry, 
+        public AddEditWizardViewModel(AddEditWizardType type, MainWindowViewModel mainVM, SitePlan entry, 
             Dictionary<string, ObservableCollection<string>> availableValues, Dictionary<string, KeyValueWrapper> propertyValues,
             Dictionary<string, KeyValueWrapper> propertyDisplayNames)
         {
@@ -268,7 +268,7 @@ namespace MilbrandtFPDB
             if (createNewFile)
             {
                 // Set our file path to export to
-                FilePath = DBHelper.GetStandardPdfFilename(projNum, plan);
+                FilePath = Settings.GetStandardPdfFilename(projNum, plan);
             }
 
             // Create the parent folder if it does not exist
@@ -278,7 +278,7 @@ namespace MilbrandtFPDB
 
             // Make sure FilePath does not already exist
             for (int i = 0; File.Exists(FilePath); i++)
-                FilePath = DBHelper.GetStandardPdfFilename(projNum, plan + "_" + i);
+                FilePath = Settings.GetStandardPdfFilename(projNum, plan + "_" + i);
 
             if (!hasAdditionalPdfs)
             {

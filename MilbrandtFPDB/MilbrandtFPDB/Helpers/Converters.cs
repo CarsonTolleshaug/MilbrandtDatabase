@@ -92,7 +92,7 @@ namespace MilbrandtFPDB
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return value.ToString() == DataGridViewModel.VALUE_ANY;
+            return value.ToString() == MainWindowViewModel.VALUE_ANY;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

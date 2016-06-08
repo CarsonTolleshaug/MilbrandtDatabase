@@ -10,20 +10,12 @@
         WindowState="{Binding MainWindowMaximized, Source={x:Static Properties:Settings.Default}, Converter={StaticResource BoolToWindowStateConverter}, Mode=TwoWay}"
         Icon="Resources/db_icon.png" Closing="Window_Closing">
     <Window.Resources>
+        <!-- Gradient Brush used to show which columns are filtered -->
         <LinearGradientBrush x:Key="ColumnFilterBrush" EndPoint="0.5,1" StartPoint="0.5,0">
             <GradientStop Color="#FFDFECF7" Offset="0.439"/>
             <GradientStop Color="#FFBDE4FF" Offset="0.456"/>
         </LinearGradientBrush>
     </Window.Resources>
-    <Window.Style>
-        <Style TargetType="Window">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=MainWindowState, Source={x:Static Properties:Settings.Default}}" Value="Maximized" >
-                    <Setter Property="WindowState" Value="Maximized" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Style>
 
     <Grid x:Name="Root">
         <Grid.ColumnDefinitions>
@@ -35,18 +27,18 @@
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
-        <!-- Left Side -->
+        <!-- Left Side (DataGrid) -->
         <DataGrid x:Name="dgSitePlans" Grid.Row="0" Margin="0,0,4,0" 
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                   CanUserAddRows="False" AutoGenerateColumns="True" IsReadOnly="True" 
                   ItemsSource="{Binding DisplayedEntries}" 
                   SelectedItem="{Binding Path=SelectedEntry, Mode=TwoWay}" 
-                  SelectionChanged="dgSitePlans_SelectionChanged" 
-                  AutoGeneratingColumn="dgSitePlans_AutoGeneratingColumn" Sorting="dgSitePlans_Sorting" />
+                  SelectionChanged="DataGridSelectionChanged" 
+                  AutoGeneratingColumn="DataGridAutoGeneratingColumn" Sorting="DataGridSorting" />
 
         <GridSplitter Grid.Column="0" Grid.RowSpan="1" HorizontalAlignment="Right" Width="4" Focusable="False" />
 
-        <!-- Right Side -->
+        <!-- Right Side (PDF Viewer) -->
         <Rectangle Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="15" >
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -59,7 +51,7 @@
 
         <MilbrandtFPDB:PdfViewer x:Name="pdfViewer" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
-        <!-- Bottom -->
+        <!-- Bottom (Menu Items) -->
         <Rectangle Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="15" >
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
