@@ -25,12 +25,18 @@ namespace MilbrandtFPDB
         // for add mode only
         private string _floorPlanPath;
 
-        public AddEditWizardViewModel(AddEditWizardType type, DataGridViewModel mainVM, SitePlan entry)
+        public AddEditWizardViewModel(AddEditWizardType type, DataGridViewModel mainVM, SitePlan entry, 
+            Dictionary<string, ObservableCollection<string>> availableValues, Dictionary<string, KeyValueWrapper> propertyValues,
+            Dictionary<string, KeyValueWrapper> propertyDisplayNames)
         {
             _type = type;
             _mainVM = mainVM;
             _entry = type == AddEditWizardType.Edit ? entry : new SitePlan();
             _filepath = _floorPlanPath = "";
+
+            AvailableValues = availableValues;
+            PropertyValues = propertyValues;
+            PropertyDisplayNames = propertyDisplayNames;
 
             InitializeValues();
         }
@@ -38,7 +44,6 @@ namespace MilbrandtFPDB
         private void InitializeValues()
         {
             // Available Values
-            AvailableValues = new Dictionary<string, ObservableCollection<string>>();
             foreach (string property in SitePlan.Properties)
             {
                 // FilePath and Date do not need available values
@@ -51,12 +56,13 @@ namespace MilbrandtFPDB
                     }
                     List<string> sortedDistinctValues = distinctValues.ToList();
                     sortedDistinctValues.Sort();
-                    AvailableValues[property] = new ObservableCollection<string>(sortedDistinctValues);
+                    AvailableValues[property].Clear();
+                    foreach (string value in sortedDistinctValues)
+                        AvailableValues[property].Add(value);
                 }
             }
 
             // Property Values
-            PropertyValues = new Dictionary<string, KeyValueWrapper>();
             foreach (string property in SitePlan.Properties)
             {                
                 string value = WizardType == AddEditWizardType.Add ? "" : SitePlan.GetProperty(Entry, property);
@@ -67,19 +73,21 @@ namespace MilbrandtFPDB
                 }
                 else
                 {
-                    PropertyValues[property] = new KeyValueWrapper(property, value);
+                    PropertyValues[property].Value = value;
+
                     if (property == "ProjectNumber")
                         PropertyValues[property].PropertyChanged += ProjectNumberChanged;
                 }
             }
 
+            // Property Display Names
+            foreach (string property in _mainVM.ParameterDisplayNames.Keys)
+            {
+                PropertyDisplayNames[property].Value = _mainVM.ParameterDisplayNames[property];
+            }
+
             // Aditional PDF Paths
             AdditionalPdfPaths = new ObservableCollection<KeyValueWrapper>();
-        }
-
-        private void ProjectNumberChanged(object sender, PropertyChangedEventArgs e)
-        {
-            AutofillFromProjectNumber();
         }
 
         public AddEditWizardType WizardType
@@ -167,6 +175,12 @@ namespace MilbrandtFPDB
             private set;
         }
 
+        public Dictionary<string, KeyValueWrapper> PropertyDisplayNames
+        {
+            get;
+            private set;
+        }
+
         public System.Windows.Visibility AddControlVisibility
         {
             get { return WizardType == AddEditWizardType.Add ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed; }
@@ -177,18 +191,12 @@ namespace MilbrandtFPDB
             get { return WizardType == AddEditWizardType.Edit ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed; }
         }
 
-
         private void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
-        }
-
-        public string GetParameterDisplayName(string parameterName)
-        {
-            return _mainVM.ParameterDisplayNames[parameterName];
         }
 
         public void Save()
@@ -205,7 +213,7 @@ namespace MilbrandtFPDB
 
             // Force FilePath to be filled in
             if (String.IsNullOrWhiteSpace(FilePath))
-                throw new ArgumentException(GetParameterDisplayName("FilePath") + " cannot be blank.");
+                throw new ArgumentException(PropertyDisplayNames["FilePath"] + " cannot be blank.");
 
             // Set the properties of the site plan object
             Entry.FilePath = FilePath;
@@ -403,6 +411,11 @@ namespace MilbrandtFPDB
             }
             catch { }
             // *********************************************************************** //
+        }
+
+        private void ProjectNumberChanged(object sender, PropertyChangedEventArgs e)
+        {
+            AutofillFromProjectNumber();
         }
 
         public void AutofillFromProjectNumber()

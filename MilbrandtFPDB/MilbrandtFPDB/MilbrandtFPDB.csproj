@@ -96,19 +96,37 @@
       <DependentUpon>AddEditWizard.xaml</DependentUpon>
     </Compile>
     <Compile Include="AddEditWizardViewModel.cs" />
+    <Compile Include="BatchEditWizard.xaml.cs">
+      <DependentUpon>BatchEditWizard.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BatchEditWizardViewModel.cs" />
     <Compile Include="DataGridViewModel.cs" />
     <Compile Include="DBHelper.cs" />
+    <Compile Include="EntryPropertiesPanel.xaml.cs">
+      <DependentUpon>EntryPropertiesPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EntryPropertiesPanelViewModel.cs" />
     <Compile Include="JobListReader.cs" />
     <Compile Include="PdfViewer.xaml.cs">
       <DependentUpon>PdfViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ProjectNumberSort.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SettingsWindowViewModel.cs" />
     <Compile Include="SitePlan.cs" />
+    <Compile Include="Converters.cs" />
     <Page Include="AddEditWizard.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="BatchEditWizard.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EntryPropertiesPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using System.Timers;
+using System.Diagnostics;
+using System.ComponentModel;
 
 namespace MilbrandtFPDB
 {
@@ -23,6 +25,7 @@ namespace MilbrandtFPDB
     public partial class MainWindow : Window
     {
         private DataGridViewModel _vm;
+        private int _generatedColumns = 0;
 
         public MainWindow()
         {
@@ -38,11 +41,11 @@ namespace MilbrandtFPDB
 
         private void dgSitePlans_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Allow multiple selections for open
-            btnOpen.IsEnabled = dgSitePlans.SelectedItems.Count > 0;
+            // Allow multiple selections for open & edit
+            btnEdit.IsEnabled = btnOpen.IsEnabled = dgSitePlans.SelectedItems.Count > 0;
 
-            // only one item can be selected for edit or remove
-            btnEdit.IsEnabled = btnRemove.IsEnabled = dgSitePlans.SelectedItems.Count == 1;
+            // only one item can be selected for remove
+            btnRemove.IsEnabled = dgSitePlans.SelectedItems.Count == 1;
 
             try
             {
@@ -100,13 +103,16 @@ namespace MilbrandtFPDB
             if (header == "Date")
             {
                 DataGridTextColumn newCol = new DataGridTextColumn();
-                newCol.Binding = new Binding("Date") { StringFormat = "{0:dd/MM/yyyy}" };
+                newCol.Binding = new Binding("Date") { StringFormat = "{0:MM/dd/yyyy}" };
                 e.Column = newCol;
             }
 
             // Create the header (which is contained in a vertical stack panel)
             StackPanel sp = new StackPanel();
             sp.Orientation = Orientation.Vertical;
+            sp.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
+            sp.VerticalAlignment = System.Windows.VerticalAlignment.Stretch;
+            sp.Tag = header;
 
             // Add header label
             sp.Children.Add(new Label() { Content = _vm.ParameterDisplayNames[header] });
@@ -135,6 +141,31 @@ namespace MilbrandtFPDB
             // Add header to column
             e.Column.Header = sp;
             e.Column.MinWidth = 65;
+
+            // Setting Column Width
+            while (MilbrandtFPDB.Properties.Settings.Default.ColumnWidths.Count <= _generatedColumns)
+                MilbrandtFPDB.Properties.Settings.Default.ColumnWidths.Add("Auto");
+            e.Column.Width = StringToColumnWidthConverter.ConvertToWidth(MilbrandtFPDB.Properties.Settings.Default.ColumnWidths[_generatedColumns]);
+
+            // Setting Column Color (Filtering)
+            Binding filterBinding = new Binding("SelectedValues[" + header + "].Value");
+            filterBinding.Source = _vm;
+            filterBinding.Converter = new ValueToIsAnyBool();
+            Style colHeaderStyle = new System.Windows.Style(typeof(ComboBox));
+            DataTrigger filterTrigger = new DataTrigger()
+            {
+                Binding = filterBinding,
+                Value = false
+            };
+            filterTrigger.Setters.Add(new Setter(ComboBox.BackgroundProperty, (LinearGradientBrush)FindResource("ColumnFilterBrush")));
+            colHeaderStyle.Triggers.Add(filterTrigger);
+            cb.Style = colHeaderStyle;
+
+            // Set default sorting
+            if (header == "ProjectNumber")
+                SortDataGridByProjectNumber(ListSortDirection.Ascending, e.Column);
+
+            _generatedColumns++;
         }
 
         private void FilterSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -146,9 +177,9 @@ namespace MilbrandtFPDB
         {
             bool? result = LaunchAddEditWizard(AddEditWizardType.Add);
 
+            dgSitePlans.Focus();
             if (result.HasValue && result.Value)
             {
-                dgSitePlans.Focus();
                 if (_vm.SelectedEntry != null)
                     dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
             }
@@ -156,7 +187,24 @@ namespace MilbrandtFPDB
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            LaunchAddEditWizard(AddEditWizardType.Edit);
+            bool? result = null;
+            if (dgSitePlans.SelectedItems.Count > 1)
+            {
+                BatchEditWizard wizard = new BatchEditWizard(_vm, dgSitePlans.SelectedItems.Cast<SitePlan>());
+                result = wizard.ShowDialog();
+            }
+            else
+            {
+                result = LaunchAddEditWizard(AddEditWizardType.Edit);
+            }
+
+
+            dgSitePlans.Focus();
+            if (result.HasValue && result.Value)
+            {
+                if (_vm.SelectedEntry != null)
+                    dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
+            }
         }
 
         private bool? LaunchAddEditWizard(AddEditWizardType type)
@@ -190,6 +238,40 @@ namespace MilbrandtFPDB
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             _vm.SaveEntries();
+
+            // save column widths
+            for (int i = 0; i < dgSitePlans.Columns.Count; i++)
+            {
+                MilbrandtFPDB.Properties.Settings.Default.ColumnWidths[i] =
+                    StringToColumnWidthConverter.ConvertToString(dgSitePlans.Columns[i].Width);
+            }
+        }
+
+        private void dgSitePlans_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            string header = (e.Column.Header as StackPanel).Tag.ToString();
+            if (header == "ProjectNumber")
+            {
+                // prevent the built-in sort from sorting
+                e.Handled = true;
+
+                ListSortDirection direction = (e.Column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
+                SortDataGridByProjectNumber(direction, e.Column);
+            }
+        }
+
+        private void SortDataGridByProjectNumber(ListSortDirection direction, DataGridColumn col)
+        {
+            System.Collections.IComparer comparer = null;
+
+            //use a ListCollectionView to do the sort.
+            ListCollectionView lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(dgSitePlans.ItemsSource);
+
+            col.SortDirection = direction;
+            comparer = new ProjectNumberSort(direction);
+
+            //apply the sort
+            lcv.CustomSort = comparer;
         }
 
     }

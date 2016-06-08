@@ -14,7 +14,7 @@ namespace MilbrandtFPDB
     {
         public event PropertyChangedEventHandler PropertyChanged;
         
-        private const string VALUE_ANY = "(Any)";
+        public const string VALUE_ANY = "(Any)";
         private ObservableCollection<SitePlan> entries = new ObservableCollection<SitePlan>();
         private Dictionary<string, ObservableCollection<string>> _availableValues = new Dictionary<string,ObservableCollection<string>>();
         private SitePlan _selectedEntry;
@@ -176,8 +176,12 @@ namespace MilbrandtFPDB
 
         private void SitePlanPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            SitePlan temp = SelectedEntry;
             RefreshDisplay();
             UpdateAvailableValues(e.PropertyName);
+
+            // Reselect the edited siteplan
+            SelectedEntry = temp;
         }
 
         public void UpdateAvailableValues(string propertyName = null)

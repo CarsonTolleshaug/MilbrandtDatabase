@@ -150,23 +150,51 @@ namespace MilbrandtFPDB
             }
 
             return true;
-            //List<string> retval = new List<string>();
+        }
 
-            //if (File.Exists(settingsFile))
-            //{
-            //    StreamReader sr = new StreamReader(settingsFile);
+        #endregion
 
-            //    while (!sr.EndOfStream)
-            //        retval.Add(sr.ReadLine());
 
-            //    sr.Close();
-            //}
+        #region Local Settings
 
-            ////if its an old settings file:
-            ////100 is default width of the last colomn
-            //if (retval.Count == 18)
-            //    retval.Add("100");
+        private static Dictionary<string, WindowSetting> _windowSettings = new Dictionary<string,WindowSetting>();
+        private static Dictionary<string, int> _columnWidths = new Dictionary<string, int>();
+        private static bool _localInitialized = ReadLocalSettings();
 
+        public static Dictionary<string, WindowSetting> WindowSettings { get { return _windowSettings; } }
+        public static Dictionary<string, int> ColumnWidths { get { return _columnWidths; } }
+
+        public static void SaveLocalSettings()
+        {
+            if (!Directory.Exists(LocalSettingsDirectory))
+                Directory.CreateDirectory(LocalSettingsDirectory);
+
+            using (XmlWriter writer = XmlWriter.Create(LocalSettingsFile, new XmlWriterSettings() { Indent = true }))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("Settings");
+
+                // Window Settings
+                foreach (WindowSetting ws in WindowSettings.Values)
+                    ws.WriteSelfToXml(writer);
+
+                // DataGrid Column Width settings
+                writer.WriteStartElement("ColumnWidths");
+                foreach (string columnName in ColumnWidths.Keys)
+                {
+                    writer.WriteElementString(columnName, ColumnWidths[columnName].ToString());
+                }
+                writer.WriteEndElement();
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+                writer.Close();
+            }
+        }
+
+        public static bool ReadLocalSettings()
+        {
+            return true;
         }
 
         #endregion
@@ -186,6 +214,33 @@ namespace MilbrandtFPDB
             if (int.TryParse(ReadValue(name, root), out temp))
                 return temp;
             return 0;
+        }
+    }
+
+    public class WindowSetting
+    {
+        public string Name { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public bool Maximized { get; set; }
+        public int? SplitterPosition { get; set; }
+
+        public void WriteSelfToXml(XmlWriter writer)
+        {
+            writer.WriteStartElement("Window");
+            writer.WriteAttributeString("Name", Name);
+
+            writer.WriteElementString("Width", Width.ToString());
+            writer.WriteElementString("Height", Height.ToString());
+            writer.WriteElementString("X", X.ToString());
+            writer.WriteElementString("Y", Y.ToString());
+            writer.WriteElementString("Maximized", Maximized.ToString());
+            if (SplitterPosition.HasValue)
+                writer.WriteElementString("SplitterPosition", SplitterPosition.Value.ToString());
+
+            writer.WriteEndElement();
         }
     }
 }
