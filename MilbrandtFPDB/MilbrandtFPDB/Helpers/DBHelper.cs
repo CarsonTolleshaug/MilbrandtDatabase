@@ -18,7 +18,7 @@ namespace MilbrandtFPDB
     /// </summary>
     public static class DBHelper
     {
-        private static string DataFile
+        public static string DataFile
         {
             get
             {

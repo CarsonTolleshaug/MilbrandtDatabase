@@ -29,6 +29,8 @@ namespace MilbrandtFPDB
         {
             InitializeComponent();
 
+            parentVM.DataChanged += parentVM_DataChanged;
+
             _vm = new AddEditWizardViewModel(type, parentVM, entry, propertiesPanel.AvailableValues, propertiesPanel.PropertyValues, propertiesPanel.PropertyDisplayNames);
             _vm.PropertyChanged += VMPropertyChanged;
             DataContext = _vm;
@@ -40,6 +42,19 @@ namespace MilbrandtFPDB
             else
             {
                 propertiesPanel.IsEnabled = false;
+            }
+        }
+
+        private void parentVM_DataChanged(object sender, FileSystemEventArgs e)
+        {
+            if (_vm.WizardType == AddEditWizardType.Edit)
+            {
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    this.Close();
+                }));
+
+                MessageBox.Show("Someone else has made changes to the database, the list must refresh before you can edit this entry.");
             }
         }
 

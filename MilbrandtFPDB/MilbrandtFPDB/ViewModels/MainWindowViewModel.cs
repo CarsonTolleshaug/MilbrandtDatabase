@@ -6,27 +6,51 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
-
+using System.IO;
+using System.Windows.Threading;
 
 namespace MilbrandtFPDB
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        public event FileSystemEventHandler DataChanged;
         
         public const string VALUE_ANY = "(Any)";
         private ObservableCollection<SitePlan> entries = new ObservableCollection<SitePlan>();
         private Dictionary<string, ObservableCollection<string>> _availableValues = new Dictionary<string,ObservableCollection<string>>();
         private SitePlan _selectedEntry;
+        private FileSystemWatcher _fileWatcher;
+        private Dispatcher _mainThread;
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(Dispatcher mainThreadDispatcher)
         {
             DisplayedEntries = new ObservableCollection<SitePlan>();
             LoadHeaders();
-
+            _mainThread = mainThreadDispatcher;
             
             DBHelper.Type = DatabaseType.SingleFamily;
+            _fileWatcher = new FileSystemWatcher(Directory.GetCurrentDirectory());
+            _fileWatcher.Changed += DataFileChanged;
             LoadEntries();
+        }
+
+        private void DataFileChanged(object sender, FileSystemEventArgs e)
+        {
+            if (e.Name != DBHelper.DataFile)
+                return;
+
+            // disable raising events again until we reload everything
+            _fileWatcher.EnableRaisingEvents = false;
+
+            if (DataChanged != null)
+                DataChanged(this, e);
+
+            // TODO: save filters before reloading entries
+            
+            _mainThread.Invoke((Action)(() => { 
+                LoadEntries();
+            }));
         }
 
         private void LoadHeaders()
@@ -69,6 +93,7 @@ namespace MilbrandtFPDB
                 AddEntry(sp, false);
             }
 
+            _fileWatcher.EnableRaisingEvents = true;
             ResetHeaderComboBoxes();
             RefreshDisplay();
             UpdateAvailableValues();
@@ -76,7 +101,14 @@ namespace MilbrandtFPDB
 
         public void SaveEntries()
         {
+            // stop listening for changes while we save
+            _fileWatcher.EnableRaisingEvents = false;
+            
+            // write the entries to file
             DBHelper.Write(Entries);
+
+            // re-enable listening for changes
+            _fileWatcher.EnableRaisingEvents = true;
         }
 
         public void AddEntry(SitePlan sp, bool refreshLists = true)

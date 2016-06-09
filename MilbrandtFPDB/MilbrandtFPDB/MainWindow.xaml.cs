@@ -52,7 +52,7 @@ namespace MilbrandtFPDB
         public MainWindow()
         {
             InitializeComponent();
-            _vm = new MainWindowViewModel();
+            _vm = new MainWindowViewModel(this.Dispatcher);
             DataContext = _vm;
         }
 
@@ -266,6 +266,7 @@ namespace MilbrandtFPDB
                 if (sp != null) // totally unneccisary, but just a precaution anyway
                 {
                     _vm.RemoveEntry(sp);
+                    _vm.SaveEntries();
                 }
             }
         }
@@ -279,6 +280,7 @@ namespace MilbrandtFPDB
             {
                 if (_vm.SelectedEntry != null)
                     dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
+                _vm.SaveEntries();
             }
         }
 
@@ -301,6 +303,7 @@ namespace MilbrandtFPDB
             {
                 if (_vm.SelectedEntry != null)
                     dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
+                _vm.SaveEntries();
             }
         }
 

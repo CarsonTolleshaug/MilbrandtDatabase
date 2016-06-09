@@ -24,10 +24,23 @@ namespace MilbrandtFPDB
         public BatchEditWizard(MainWindowViewModel parentVM, IEnumerable<SitePlan> entries)
         {
             InitializeComponent();
+
+            parentVM.DataChanged += parentVM_DataChanged;
+
             _vm = new BatchEditWizardViewModel(parentVM, entries, propertiesPanel.AvailableValues, propertiesPanel.PropertyValues, propertiesPanel.PropertyDisplayNames);
             DataContext = _vm;
 
             propertiesPanel.DatePickerWatermark = BatchEditWizardViewModel.VALUE_VARIED;
+        }
+
+        private void parentVM_DataChanged(object sender, System.IO.FileSystemEventArgs e)
+        {
+            // when someone is editing a new item, warn them, and then close the window
+            MessageBox.Show("Someone else has made changes to the database, the list must refresh before you can make edits.");
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                this.Close();
+            }));
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
