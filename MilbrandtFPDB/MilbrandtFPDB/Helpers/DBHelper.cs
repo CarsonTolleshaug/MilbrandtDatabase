@@ -7,6 +7,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Xml;
 using System.Xml.Linq;
+using System.Threading;
 
 namespace MilbrandtFPDB
 {
@@ -80,29 +81,41 @@ namespace MilbrandtFPDB
                 File.Copy(OldDataFile, OldDataFile + ".bak", true);
                 File.Delete(OldDataFile);
             }
-        }        
+        }
 
+        private const int READ_TIMEOUT = 5000; // 5 seconds
         public static List<SitePlan> Read()
         {
             List<SitePlan> entryList = new List<SitePlan>();
 
             if (File.Exists(DataFile))
             {
-                XDocument doc = XDocument.Load(DataFile, LoadOptions.PreserveWhitespace);
-                XElement list = doc.Element("EntryList");
-                if (list != null)
-                {
-                    foreach(XElement entry in list.Descendants("Entry"))
-                    {
-                        SitePlan s = new SitePlan();
+                // Try to read the file, continuously trying for 5 seconds before giving up
+                string fullpath = Path.Combine(Directory.GetCurrentDirectory(), DataFile);
+                bool success = TryToUseFile(fullpath, 
+                    (sr) => 
+                    { 
+                        XDocument doc = XDocument.Load(sr, LoadOptions.PreserveWhitespace);
+                        XElement list = doc.Element("EntryList");
+                        if (list != null)
+                        {
+                            foreach (XElement entry in list.Descendants("Entry"))
+                            {
+                                SitePlan s = new SitePlan();
 
-                        // Read or get a blank value for all properties
-                        foreach (string propertyName in SitePlan.Properties)
-                            SitePlan.SetProperty(s, propertyName, ReadValue(propertyName, entry));
+                                // Read or get a blank value for all properties
+                                foreach (string propertyName in SitePlan.Properties)
+                                    SitePlan.SetProperty(s, propertyName, ReadValue(propertyName, entry));
 
-                        entryList.Add(s);
-                    }
-                }     
+                                entryList.Add(s);
+                            }
+                        }
+                    }, 
+                    READ_TIMEOUT);
+
+                // if we were unsuccesful, let the outside world handle it.
+                if (!success)
+                    throw new IOException("Process timed out.");
             }
             else if (File.Exists(OldDataFile))
             {
@@ -129,7 +142,7 @@ namespace MilbrandtFPDB
         {
             List<SitePlan> entryList = new List<SitePlan>();
             using (StreamReader sr = new StreamReader(path))
-            {
+            {                
                 while (!sr.EndOfStream)
                 {
                     string[] data = sr.ReadLine().Split("|".ToCharArray(), 12);
@@ -162,5 +175,74 @@ namespace MilbrandtFPDB
             }
             return entryList;
         }
-    }
+
+
+        // Obtained from CodeProject:
+        // http://www.codeproject.com/Tips/164428/C-FileStream-Lock-How-to-wait-for-a-file-to-get-re
+        // Modified to use StreamReader rather than FileStream
+        public static bool TryToUseFile(string path, Action<StreamReader> action, int milliSecondMax = Timeout.Infinite)
+        {
+            bool result = false;
+            DateTime dateTimestart = DateTime.Now;
+            Tuple<AutoResetEvent, FileSystemWatcher> tuple = null;
+
+            while (true)
+            {
+                try
+                {
+                    using (var file = new StreamReader(path))
+                    {
+                        action(file);
+                        result = true;
+                        break;
+                    }
+                }
+                catch (IOException ex)
+                {
+                    // Init only once and only if needed. Prevent against many instantiation in case of multhreaded 
+                    // file access concurrency (if file is frequently accessed by someone else). Better memory usage.
+                    if (tuple == null)
+                    {
+                        var autoResetEvent = new AutoResetEvent(true);
+                        var fileSystemWatcher = new FileSystemWatcher(Path.GetDirectoryName(path))
+                        {
+                            EnableRaisingEvents = true
+                        };
+
+                        fileSystemWatcher.Changed +=
+                            (o, e) =>
+                            {
+                                if (Path.GetFullPath(e.FullPath) == Path.GetFullPath(path))
+                                {
+                                    autoResetEvent.Set();
+                                }
+                            };
+
+                        tuple = new Tuple<AutoResetEvent, FileSystemWatcher>(autoResetEvent, fileSystemWatcher);
+                    }
+
+                    int milliSecond = Timeout.Infinite;
+                    if (milliSecondMax != Timeout.Infinite)
+                    {
+                        milliSecond = (int)(DateTime.Now - dateTimestart).TotalMilliseconds;
+                        if (milliSecond >= milliSecondMax)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+
+                    tuple.Item1.WaitOne(milliSecond);
+                }
+            }
+
+            if (tuple != null && tuple.Item1 != null) // Dispose of resources now (don't wait the GC).
+            {
+                tuple.Item1.Dispose();
+                tuple.Item2.Dispose();
+            }
+
+            return result;
+        }
+    }    
 }

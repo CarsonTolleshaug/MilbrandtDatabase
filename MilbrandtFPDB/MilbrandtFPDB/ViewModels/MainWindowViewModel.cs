@@ -15,6 +15,7 @@ namespace MilbrandtFPDB
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public event FileSystemEventHandler DataChanged;
+        public event EventHandler<string> ErrorOccured;
         
         public const string VALUE_ANY = "(Any)";
         private ObservableCollection<SitePlan> entries = new ObservableCollection<SitePlan>();
@@ -96,7 +97,19 @@ namespace MilbrandtFPDB
         private void LoadEntries()
         {
             entries.Clear();
-            foreach (SitePlan sp in DBHelper.Read())
+            List<SitePlan> data;
+
+            try
+            {
+                data = DBHelper.Read();
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccured("Fatal Error, Unable to read data file:\n" + ex.Message);
+                return;
+            }
+
+            foreach (SitePlan sp in data)
             {
                 AddEntry(sp, false);
             }
@@ -232,6 +245,22 @@ namespace MilbrandtFPDB
             }
             else if (!_availableValues.Keys.Contains(propertyName))
             {
+                return;
+            }
+            else if (Entries.Count == 0) // Edge case if something goes wrong
+            {
+                // Clear list of all but "Any"
+                int i = 0;
+                while (AvailableValues[propertyName].Count > 1)
+                {
+                    if (AvailableValues[propertyName][i] != VALUE_ANY)
+                        AvailableValues[propertyName].RemoveAt(i);
+                    else
+                        i++;
+                }
+
+                // Set "Any" as the selected value
+                SelectedValues[propertyName].Value = VALUE_ANY;
                 return;
             }
 
@@ -396,6 +425,14 @@ namespace MilbrandtFPDB
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private void OnErrorOccured(string errorMsg)
+        {
+            if (ErrorOccured != null)
+            {
+                ErrorOccured(this, errorMsg);
             }
         }
     }

@@ -54,6 +54,12 @@ namespace MilbrandtFPDB
             InitializeComponent();
             _vm = new MainWindowViewModel(this.Dispatcher);
             DataContext = _vm;
+            _vm.ErrorOccured += _vm_ErrorOccured;
+        }
+
+        private void _vm_ErrorOccured(object sender, string e)
+        {
+            MessageBox.Show(e);
         }
 
 
