@@ -1,11 +1,14 @@
 ﻿<Application
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:l="clr-namespace:MilbrandtFPDB"
-             xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="MilbrandtFPDB.App"
-             StartupUri="MainWindow.xaml"
-             Startup="Application_Startup"
-             Exit="Application_Exit">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="clr-namespace:MilbrandtFPDB"
+    xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+    x:Class="MilbrandtFPDB.App"
+    StartupUri="MainWindow.xaml"
+    Startup="Application_Startup"
+    Exit="Application_Exit">
+    <!-- xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" -->
+    
     <Application.Resources>
         <l:BoolToWindowStateConverter x:Key="BoolToWindowStateConverter" />
         <l:MathConverter x:Key="MathConverter" />

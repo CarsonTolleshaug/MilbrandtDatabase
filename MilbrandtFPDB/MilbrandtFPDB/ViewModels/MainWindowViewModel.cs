@@ -32,7 +32,7 @@ namespace MilbrandtFPDB
             DBHelper.Type = DatabaseType.SingleFamily;
             _fileWatcher = new FileSystemWatcher(Directory.GetCurrentDirectory());
             _fileWatcher.Changed += DataFileChanged;
-            LoadEntries();
+            LoadNewDataset();
         }
 
         private void DataFileChanged(object sender, FileSystemEventArgs e)
@@ -45,11 +45,11 @@ namespace MilbrandtFPDB
 
             if (DataChanged != null)
                 DataChanged(this, e);
-
-            // TODO: save filters before reloading entries
             
             _mainThread.Invoke((Action)(() => { 
                 LoadEntries();
+                RefreshDisplay();
+                UpdateAvailableValues();
             }));
         }
 
@@ -85,6 +85,14 @@ namespace MilbrandtFPDB
             UpdateAvailableValues();
         }
 
+        private void LoadNewDataset()
+        {
+            LoadEntries();
+            ResetHeaderComboBoxes();
+            RefreshDisplay();
+            UpdateAvailableValues();
+        }
+
         private void LoadEntries()
         {
             entries.Clear();
@@ -94,9 +102,6 @@ namespace MilbrandtFPDB
             }
 
             _fileWatcher.EnableRaisingEvents = true;
-            ResetHeaderComboBoxes();
-            RefreshDisplay();
-            UpdateAvailableValues();
         }
 
         public void SaveEntries()
@@ -364,7 +369,7 @@ namespace MilbrandtFPDB
 
                     DBHelper.Type = value;
                     OnPropertyChanged("SelectedDatabase");
-                    LoadEntries();
+                    LoadNewDataset();
                 }
             }
         }
