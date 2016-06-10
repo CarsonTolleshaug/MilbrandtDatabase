@@ -16,9 +16,11 @@ namespace MilbrandtFPDB
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private int _id;
         private string _projNum, _projName, _clientName, _location, _type, _plan, _width, _depth, _beds, _baths, _sqft, _filePath;
         private DateTime _date;
 
+        private static BitMask usedIDs = new BitMask();
 
         #region Properties
 
@@ -26,6 +28,20 @@ namespace MilbrandtFPDB
         {
             get;
             set;
+        }
+
+        internal int ID
+        {
+            get { return _id; }
+            set
+            {
+                if (_id != value && value >= 0 && !usedIDs[value])
+                {
+                    usedIDs[value] = true;
+                    usedIDs[_id] = false;
+                    _id = value;                    
+                }
+            }
         }
 
         // NOTE: Add new params here
@@ -230,8 +246,11 @@ namespace MilbrandtFPDB
             }
         }
 
-        public SitePlan() //Constructor for creating new entries
+        public SitePlan()
         {
+            _id = usedIDs.GetFirstAvailableIndex();
+            usedIDs[_id] = true;
+
             // Add new params default values here
             this.ProjectName = "New Plan Reference";
             this.ClientName = this.Location = this.Type = this.Plan =

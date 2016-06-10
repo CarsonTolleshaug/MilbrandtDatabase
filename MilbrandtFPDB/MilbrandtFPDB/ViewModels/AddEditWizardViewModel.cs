@@ -15,6 +15,7 @@ namespace MilbrandtFPDB
     public class AddEditWizardViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler<string> ErrorOccured;
 
         private AddEditWizardType _type;
         private SitePlan _entry;
@@ -34,11 +35,20 @@ namespace MilbrandtFPDB
             _entry = type == AddEditWizardType.Edit ? entry : new SitePlan();
             _filepath = _floorPlanPath = "";
 
+            if (type == AddEditWizardType.Edit)
+                _entry.PropertyChanged += EntryPropertyChanged;
+
             AvailableValues = availableValues;
             PropertyValues = propertyValues;
             PropertyDisplayNames = propertyDisplayNames;
 
             InitializeValues();
+        }
+
+        private void EntryPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            _entry.PropertyChanged -= EntryPropertyChanged;
+            OnErrorOccured("Someone else has made changes to the entry you were editing. Please try again if you wish to make additional changes.");
         }
 
         private void InitializeValues()
@@ -199,6 +209,14 @@ namespace MilbrandtFPDB
             }
         }
 
+        private void OnErrorOccured(string message)
+        {
+            if (ErrorOccured != null)
+            {
+                ErrorOccured(this, message);
+            }
+        }
+
         public void Save()
         {
             // This should never happen, but just a precaution
@@ -215,6 +233,9 @@ namespace MilbrandtFPDB
             if (String.IsNullOrWhiteSpace(FilePath))
                 throw new ArgumentException(PropertyDisplayNames["FilePath"] + " cannot be blank.");
 
+            // Remove event handler so we don't set it off.
+            Entry.PropertyChanged -= EntryPropertyChanged;
+
             // Set the properties of the site plan object
             Entry.FilePath = FilePath;
             foreach (string property in PropertyValues.Keys)
@@ -226,8 +247,6 @@ namespace MilbrandtFPDB
             {
                 _mainVM.AddEntry(Entry);
             }
-            
-            //Todo: tell _mainVM to save to file
         }
 
         private void BuildCompositePdf(string mainPdfPath, bool createNewFile)

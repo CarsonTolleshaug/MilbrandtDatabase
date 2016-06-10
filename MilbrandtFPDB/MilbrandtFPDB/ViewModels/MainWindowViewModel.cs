@@ -18,18 +18,19 @@ namespace MilbrandtFPDB
         public event EventHandler<string> ErrorOccured;
         
         public const string VALUE_ANY = "(Any)";
-        private ObservableCollection<SitePlan> entries = new ObservableCollection<SitePlan>();
+        private Dictionary<int, SitePlan> entries = new Dictionary<int, SitePlan>();
         private Dictionary<string, ObservableCollection<string>> _availableValues = new Dictionary<string,ObservableCollection<string>>();
         private SitePlan _selectedEntry;
         private FileSystemWatcher _fileWatcher;
         private Dispatcher _mainThread;
+        private bool _preventSave;
 
         public MainWindowViewModel(Dispatcher mainThreadDispatcher)
         {
             DisplayedEntries = new ObservableCollection<SitePlan>();
             LoadHeaders();
             _mainThread = mainThreadDispatcher;
-            
+
             DBHelper.Type = DatabaseType.SingleFamily;
             _fileWatcher = new FileSystemWatcher(Directory.GetCurrentDirectory());
             _fileWatcher.Changed += DataFileChanged;
@@ -47,8 +48,8 @@ namespace MilbrandtFPDB
             if (DataChanged != null)
                 DataChanged(this, e);
             
-            _mainThread.Invoke((Action)(() => { 
-                LoadEntries();
+            _mainThread.Invoke((Action)(() => {
+                UpdateEntries();
                 RefreshDisplay();
                 UpdateAvailableValues();
             }));
@@ -101,11 +102,13 @@ namespace MilbrandtFPDB
 
             try
             {
-                data = DBHelper.Read();
+                data = DBHelper.Load();
+                _preventSave = false;
             }
             catch (Exception ex)
             {
-                OnErrorOccured("Fatal Error, Unable to read data file:\n" + ex.Message);
+                OnErrorOccured("Unable to read data file:\n" + ex.Message);
+                _preventSave = true; ;
                 return;
             }
 
@@ -117,8 +120,29 @@ namespace MilbrandtFPDB
             _fileWatcher.EnableRaisingEvents = true;
         }
 
+        private void UpdateEntries()
+        {
+            try
+            {
+                DBHelper.Update(entries);
+                _fileWatcher.EnableRaisingEvents = true;
+            }
+            catch (Exception ex)
+            {
+                _preventSave = true;
+                OnErrorOccured("A recent change made by someone else has prevented the application from updating. " +
+                    "It is recomended you restart the application. " + 
+                    "Any additional changes you make to this database before restarting the application will not be saved" +
+                    "If this problem persists, contact an administrator." + 
+                    "\n\nError Detail:\n" + ex.Message);
+            }
+        }
+
         public void SaveEntries()
         {
+            if (_preventSave)
+                return;
+
             // stop listening for changes while we save
             _fileWatcher.EnableRaisingEvents = false;
             
@@ -131,7 +155,7 @@ namespace MilbrandtFPDB
 
         public void AddEntry(SitePlan sp, bool refreshLists = true)
         {
-            entries.Add(sp);
+            entries.Add(sp.ID, sp);
 
             sp.PropertyChanged += SitePlanPropertyChanged;
 
@@ -151,13 +175,9 @@ namespace MilbrandtFPDB
 
         public void RemoveEntry(SitePlan sp)
         {
-            if (entries.Remove(sp))
+            if (entries.Remove(sp.ID))
             {
                 DisplayedEntries.Remove(sp);
-
-                // update all available values
-                //UpdateAvailableValues();
-                //RefreshDisplay();
             }
         }
 
@@ -172,7 +192,7 @@ namespace MilbrandtFPDB
         public void RefreshDisplay()
         {
             DisplayedEntries.Clear();
-            foreach(SitePlan sp in entries)
+            foreach(SitePlan sp in entries.Values)
             {
                 bool match = true;
                 foreach(string property in SitePlan.Properties)
@@ -247,7 +267,7 @@ namespace MilbrandtFPDB
             {
                 return;
             }
-            else if (Entries.Count == 0) // Edge case if something goes wrong
+            else if (entries.Count == 0) // Edge case if something goes wrong
             {
                 // Clear list of all but "Any"
                 int i = 0;
@@ -295,7 +315,12 @@ namespace MilbrandtFPDB
                 }
 
                 orderedDistinctValues = distinctValues.ToList();
-                orderedDistinctValues.Sort();
+
+                if (propertyName == "ProjectNumber")
+                    orderedDistinctValues.Sort(new ProjectNumberSort(ListSortDirection.Ascending));
+                else
+                    orderedDistinctValues.Sort();
+
                 orderedDistinctValues.Insert(0, VALUE_ANY);
             }
 
@@ -347,9 +372,9 @@ namespace MilbrandtFPDB
                 SelectedValues[propertyName].Value = VALUE_ANY;
         }
 
-        public ObservableCollection<SitePlan> Entries
+        public IEnumerable<SitePlan> Entries
         {
-            get { return entries; }
+            get { return entries.Values; }
         }
 
         public ObservableCollection<SitePlan> DisplayedEntries
@@ -393,9 +418,6 @@ namespace MilbrandtFPDB
             {
                 if (DBHelper.Type != value)
                 {
-                    // save changes before we switch
-                    DBHelper.Write(Entries);
-
                     DBHelper.Type = value;
                     OnPropertyChanged("SelectedDatabase");
                     LoadNewDataset();

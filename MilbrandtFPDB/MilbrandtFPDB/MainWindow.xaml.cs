@@ -57,12 +57,6 @@ namespace MilbrandtFPDB
             _vm.ErrorOccured += _vm_ErrorOccured;
         }
 
-        private void _vm_ErrorOccured(object sender, string e)
-        {
-            MessageBox.Show(e);
-        }
-
-
         #region DataGrid
 
         private void DataGridSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -343,10 +337,14 @@ namespace MilbrandtFPDB
 
         #endregion
 
+
+        private void _vm_ErrorOccured(object sender, string e)
+        {
+            MessageBox.Show(e);
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _vm.SaveEntries();
-
             // save column widths
             for (int i = 0; i < dgSitePlans.Columns.Count; i++)
             {

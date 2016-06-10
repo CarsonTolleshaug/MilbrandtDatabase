@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace MilbrandtFPDB
 {
-    public class ProjectNumberSort : System.Collections.IComparer
+    public class ProjectNumberSort : System.Collections.IComparer, IComparer<string>
     {
         private const int MAX_YEAR = 80; // 1980
         private ListSortDirection _sortDirection;
@@ -31,18 +31,25 @@ namespace MilbrandtFPDB
             else if (spy == null)
                 return -1 * sortFactor;
 
-            if (String.IsNullOrWhiteSpace(spx.ProjectNumber) && String.IsNullOrWhiteSpace(spy.ProjectNumber))
+            return Compare(spx.ProjectNumber, spy.ProjectNumber);
+        }
+
+        public int Compare(string x, string y)
+        {
+            int sortFactor = _sortDirection == ListSortDirection.Descending ? 1 : -1;
+
+            if (String.IsNullOrWhiteSpace(x) && String.IsNullOrWhiteSpace(y))
                 return 0;
-            else if (String.IsNullOrWhiteSpace(spx.ProjectNumber))
+            else if (String.IsNullOrWhiteSpace(x))
                 return 1 * sortFactor;
-            else if (String.IsNullOrWhiteSpace(spy.ProjectNumber))
+            else if (String.IsNullOrWhiteSpace(y))
                 return -1 * sortFactor;
 
-            StringBuilder sbx = new StringBuilder(spx.ProjectNumber);
-            StringBuilder sby = new StringBuilder(spy.ProjectNumber);
+            StringBuilder sbx = new StringBuilder(x);
+            StringBuilder sby = new StringBuilder(y);
             int temp;
 
-            
+
             if (int.TryParse(sbx.ToString(), out temp))
             {
                 // anything where the first two numbers are >= 80

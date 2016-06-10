@@ -11,6 +11,7 @@ namespace MilbrandtFPDB
     public class BatchEditWizardViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler<string> ErrorOccured;
 
         private MainWindowViewModel _mainVM;
         private IEnumerable<SitePlan> _entries;
@@ -23,11 +24,19 @@ namespace MilbrandtFPDB
             _mainVM = mainVM;
             _entries = entries;
 
+            foreach (SitePlan entry in _entries)
+                entry.PropertyChanged += entry_PropertyChanged;
+
             AvailableValues = availableValues;
             PropertyValues = propertyValues;
             PropertyDisplayNames = propertyDisplayNames;
 
             InitializeValues();
+        }
+
+        private void entry_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            OnErrorOccured("Someone else has made changes to one the entries you were editing. Please try again if you wish to make additional changes.");
         }
 
         private void InitializeValues()
@@ -121,6 +130,12 @@ namespace MilbrandtFPDB
         {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void OnErrorOccured(string errorMessage)
+        {
+            if (ErrorOccured != null)
+                ErrorOccured(this, errorMessage);
         }
     }
 }

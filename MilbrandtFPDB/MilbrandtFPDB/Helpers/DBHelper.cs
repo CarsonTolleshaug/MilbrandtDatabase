@@ -63,7 +63,9 @@ namespace MilbrandtFPDB
                 {
                     writer.WriteStartElement("Entry");
 
-                    // Write all the siteplan properties
+                    writer.WriteElementString("ID", s.ID.ToString());
+
+                    // Write all the siteplan public properties
                     foreach (string propertyName in SitePlan.Properties)
                         writer.WriteElementString(propertyName, SitePlan.GetProperty(s, propertyName));
 
@@ -83,39 +85,26 @@ namespace MilbrandtFPDB
             }
         }
 
-        private const int READ_TIMEOUT = 5000; // 5 seconds
-        public static List<SitePlan> Read()
+        public static List<SitePlan> Load()
         {
             List<SitePlan> entryList = new List<SitePlan>();
 
             if (File.Exists(DataFile))
             {
-                // Try to read the file, continuously trying for 5 seconds before giving up
-                string fullpath = Path.Combine(Directory.GetCurrentDirectory(), DataFile);
-                bool success = TryToUseFile(fullpath, 
-                    (sr) => 
-                    { 
-                        XDocument doc = XDocument.Load(sr, LoadOptions.PreserveWhitespace);
-                        XElement list = doc.Element("EntryList");
-                        if (list != null)
-                        {
-                            foreach (XElement entry in list.Descendants("Entry"))
-                            {
-                                SitePlan s = new SitePlan();
+                Read((entry) =>
+                {
+                    SitePlan s = new SitePlan();
 
-                                // Read or get a blank value for all properties
-                                foreach (string propertyName in SitePlan.Properties)
-                                    SitePlan.SetProperty(s, propertyName, ReadValue(propertyName, entry));
+                    int id = ReadInt("ID", entry);
+                    if (id >= 0)
+                        s.ID = id;
 
-                                entryList.Add(s);
-                            }
-                        }
-                    }, 
-                    READ_TIMEOUT);
+                    // Read or get a blank value for all properties
+                    foreach (string propertyName in SitePlan.Properties)
+                        SitePlan.SetProperty(s, propertyName, ReadValue(propertyName, entry));
 
-                // if we were unsuccesful, let the outside world handle it.
-                if (!success)
-                    throw new IOException("Process timed out.");
+                    entryList.Add(s);
+                });
             }
             else if (File.Exists(OldDataFile))
             {
@@ -129,6 +118,51 @@ namespace MilbrandtFPDB
             return entryList;
         }
 
+        public static void Update(Dictionary<int, SitePlan> entries)
+        {
+            Read((entry) =>
+            {
+                int id = ReadInt("ID", entry);
+                if (id >= 0)
+                {
+                    if (!entries.ContainsKey(id))
+                    {
+                        // add new entry
+                        entries[id] = new SitePlan();
+                    }
+
+                    // update property values if different
+                    foreach (string propertyName in SitePlan.Properties)
+                        SitePlan.SetProperty(entries[id], propertyName, ReadValue(propertyName, entry));
+                }
+            });
+        }
+
+        private const int READ_TIMEOUT = 5000; // 5 seconds
+        private static void Read(Action<XElement> entryAction)
+        {
+            // Try to read the file, continuously trying for 5 seconds before giving up
+            string fullpath = Path.Combine(Directory.GetCurrentDirectory(), DataFile);
+            bool success = TryToUseFile(fullpath,
+                (sr) =>
+                {
+                    XDocument doc = XDocument.Load(sr, LoadOptions.PreserveWhitespace);
+                    XElement list = doc.Element("EntryList");
+                    if (list != null)
+                    {
+                        foreach (XElement entry in list.Descendants("Entry"))
+                        {
+                            entryAction(entry);
+                        }
+                    }
+                },
+                READ_TIMEOUT);
+
+            // if we were unsuccesful, let the outside world handle it.
+            if (!success)
+                throw new IOException("Process timed out.");
+        }
+
         private static string ReadValue(string name, XElement root)
         {
             XElement elm = root.Element(name);
@@ -136,6 +170,14 @@ namespace MilbrandtFPDB
                 return "";
 
             return elm.Value;
+        }
+
+        private static int ReadInt(string name, XElement root)
+        {
+            int temp;
+            if (int.TryParse(ReadValue(name, root), out temp))
+                return temp;
+            return -1;
         }
 
         private static List<SitePlan> ReadOldFile(string path)
