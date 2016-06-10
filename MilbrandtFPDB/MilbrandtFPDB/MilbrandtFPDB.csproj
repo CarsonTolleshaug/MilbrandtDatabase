@@ -54,8 +54,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>Resources\main_icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PdfiumViewer">
@@ -208,6 +207,7 @@
   <ItemGroup>
     <Resource Include="Resources\open_icon.png" />
     <Resource Include="Resources\main_icon.png" />
+    <Resource Include="Resources\main_icon.ico" />
     <Content Include="x64\pdfium.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
