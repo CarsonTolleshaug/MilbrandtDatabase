@@ -286,6 +286,10 @@ namespace MilbrandtFPDB
 
             List<string> orderedDistinctValues;
 
+            IComparer<string> comparer = StringComparer.CurrentCultureIgnoreCase;
+            if (propertyName == "ProjectNumber")
+                comparer = new ProjectNumberSort(ListSortDirection.Ascending);
+
             // handle sq ft differently, because it has range values
             if (propertyName == "SquareFeet")
             {
@@ -316,10 +320,7 @@ namespace MilbrandtFPDB
 
                 orderedDistinctValues = distinctValues.ToList();
 
-                if (propertyName == "ProjectNumber")
-                    orderedDistinctValues.Sort(new ProjectNumberSort(ListSortDirection.Ascending));
-                else
-                    orderedDistinctValues.Sort();
+                orderedDistinctValues.Sort(comparer);
 
                 orderedDistinctValues.Insert(0, VALUE_ANY);
             }
@@ -349,12 +350,12 @@ namespace MilbrandtFPDB
                         //add one
                         _availableValues[propertyName].Add(orderedDistinctValues[j]);
                     }
-                    else if (_availableValues[propertyName][i].CompareTo(orderedDistinctValues[j]) < 0)
+                    else if (comparer.Compare(_availableValues[propertyName][i], orderedDistinctValues[j]) < 0)
                     {
                         // remove one
                         _availableValues[propertyName].RemoveAt(i);
                     }
-                    else if (_availableValues[propertyName][i].CompareTo(orderedDistinctValues[j]) > 0)
+                    else if (comparer.Compare(_availableValues[propertyName][i], orderedDistinctValues[j]) > 0)
                     {
                         //add one
                         _availableValues[propertyName].Insert(j, orderedDistinctValues[j]);

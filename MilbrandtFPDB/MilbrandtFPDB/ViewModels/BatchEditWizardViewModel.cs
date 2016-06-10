@@ -16,6 +16,7 @@ namespace MilbrandtFPDB
         private MainWindowViewModel _mainVM;
         private IEnumerable<SitePlan> _entries;
         public const string VALUE_VARIED = "<varies>";
+        private bool _raiseErrorOnPropertyChanged;
 
         public BatchEditWizardViewModel(MainWindowViewModel mainVM, IEnumerable<SitePlan> entries, 
             Dictionary<string, ObservableCollection<string>> availableValues, Dictionary<string, KeyValueWrapper> propertyValues,
@@ -27,6 +28,8 @@ namespace MilbrandtFPDB
             foreach (SitePlan entry in _entries)
                 entry.PropertyChanged += entry_PropertyChanged;
 
+            _raiseErrorOnPropertyChanged = true;
+
             AvailableValues = availableValues;
             PropertyValues = propertyValues;
             PropertyDisplayNames = propertyDisplayNames;
@@ -36,7 +39,11 @@ namespace MilbrandtFPDB
 
         private void entry_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            OnErrorOccured("Someone else has made changes to one the entries you were editing. Please try again if you wish to make additional changes.");
+            if (_raiseErrorOnPropertyChanged)
+            {
+                _raiseErrorOnPropertyChanged = false;
+                OnErrorOccured("Someone else has made changes to one the entries you were editing. Please try again if you wish to make additional changes.");
+            }
         }
 
         private void InitializeValues()
@@ -94,6 +101,9 @@ namespace MilbrandtFPDB
 
         public void Save()
         {
+            // prevent our property changed handler from firing
+            _raiseErrorOnPropertyChanged = false;
+
             SitePlan[] spArray = _entries.ToArray();
             foreach (string property in PropertyValues.Keys)
             {

@@ -22,6 +22,7 @@ namespace MilbrandtFPDB
         private MainWindowViewModel _mainVM;
         private string _filepath;
         private string _tempPath;
+        private bool _raiseErrorOnPropertyChanged;
 
         // for add mode only
         private string _floorPlanPath;
@@ -37,6 +38,7 @@ namespace MilbrandtFPDB
 
             if (type == AddEditWizardType.Edit)
                 _entry.PropertyChanged += EntryPropertyChanged;
+            _raiseErrorOnPropertyChanged = true;
 
             AvailableValues = availableValues;
             PropertyValues = propertyValues;
@@ -47,8 +49,11 @@ namespace MilbrandtFPDB
 
         private void EntryPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            _entry.PropertyChanged -= EntryPropertyChanged;
-            OnErrorOccured("Someone else has made changes to the entry you were editing. Please try again if you wish to make additional changes.");
+            if (_raiseErrorOnPropertyChanged)
+            {
+                _raiseErrorOnPropertyChanged = false;
+                OnErrorOccured("Someone else has made changes to the entry you were editing. Please try again if you wish to make additional changes.");
+            }
         }
 
         private void InitializeValues()
@@ -234,7 +239,7 @@ namespace MilbrandtFPDB
                 throw new ArgumentException(PropertyDisplayNames["FilePath"] + " cannot be blank.");
 
             // Remove event handler so we don't set it off.
-            Entry.PropertyChanged -= EntryPropertyChanged;
+            _raiseErrorOnPropertyChanged = false;
 
             // Set the properties of the site plan object
             Entry.FilePath = FilePath;
@@ -288,21 +293,24 @@ namespace MilbrandtFPDB
             {
                 // Set our file path to export to
                 FilePath = Settings.GetStandardPdfFilename(projNum, plan);
+
+                // Create the parent folder if it does not exist
+                string parentDir = Directory.GetParent(FilePath).FullName;
+                if (!Directory.Exists(parentDir))
+                    Directory.CreateDirectory(parentDir);
+
+                // Make sure FilePath does not already exist
+                for (int i = 0; File.Exists(FilePath); i++)
+                    FilePath = Settings.GetStandardPdfFilename(projNum, plan + "_" + i);
             }
-
-            // Create the parent folder if it does not exist
-            string parentDir = Directory.GetParent(FilePath).FullName;
-            if (!Directory.Exists(parentDir))
-                Directory.CreateDirectory(parentDir);
-
-            // Make sure FilePath does not already exist
-            for (int i = 0; File.Exists(FilePath); i++)
-                FilePath = Settings.GetStandardPdfFilename(projNum, plan + "_" + i);
 
             if (!hasAdditionalPdfs)
             {
-                // We simply copy the pdf to the new location
-                File.Copy(mainPdfPath, FilePath);
+                if (mainPdfPath != FilePath)
+                {
+                    // We simply copy the pdf to the new location
+                    File.Copy(mainPdfPath, FilePath);
+                }
             }
             else
             {
@@ -320,7 +328,10 @@ namespace MilbrandtFPDB
                 }
 
                 // Save the new combined document in the previously generated FilePath location
-                outputDoc.Save(FilePath);
+                using (FileStream file = File.Open(FilePath, FileMode.Create, FileAccess.Write))
+                {
+                    outputDoc.Save(file);
+                }
             }
         }
 
@@ -350,7 +361,10 @@ namespace MilbrandtFPDB
             }
 
             // Save the new combined document in the previously generated temp location
-            outputDoc.Save(_tempPath);
+            using (FileStream file = File.Open(_tempPath, FileMode.Create, FileAccess.Write))
+            {
+                outputDoc.Save(file);
+            }
 
             return _tempPath;
         }
