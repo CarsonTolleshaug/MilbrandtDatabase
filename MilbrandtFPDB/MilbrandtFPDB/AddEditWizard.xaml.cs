@@ -57,10 +57,11 @@ namespace MilbrandtFPDB
 
         private void VMPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "FilePath" || e.PropertyName == "FloorPlanPath")
+            if (e.PropertyName == "FilePath" && _vm.WizardType == AddEditWizardType.Edit)
                 UpdatePdfViewer();
             if (e.PropertyName == "FloorPlanPath")
             {
+                UpdatePdfViewer();
                 propertiesPanel.IsEnabled = !String.IsNullOrWhiteSpace(_vm.FloorPlanPath);
             }
         }
@@ -111,6 +112,7 @@ namespace MilbrandtFPDB
         {
             try
             {
+                pdfViewer.ReleaseDocument();
                 _vm.Save();
                 this.DialogResult = true;
                 this.Close();

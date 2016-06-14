@@ -63,7 +63,12 @@ namespace MilbrandtFPDB
             bool exists = File.Exists(filepath);
             if (!String.IsNullOrWhiteSpace(filepath) && exists)
             {
-                PdfDocument doc = PdfDocument.Load(filepath);
+                PdfDocument doc = null;
+                using (FileStream fs = File.Open(filepath, FileMode.Open))
+                {
+                    doc = PdfDocument.Load(fs);
+                    fs.Close();
+                }
                 viewer.Document = doc;
                 winFormsHost.Visibility = System.Windows.Visibility.Visible;
             }            

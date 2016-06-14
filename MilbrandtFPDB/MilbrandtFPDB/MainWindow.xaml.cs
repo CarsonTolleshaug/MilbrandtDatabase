@@ -164,7 +164,7 @@ namespace MilbrandtFPDB
 
             // Set default sorting
             if (header == "ProjectNumber")
-                SortDataGridByProjectNumber(ListSortDirection.Ascending, e.Column);
+                SortDataGridByProjectNumber(ListSortDirection.Descending, e.Column);
 
             _generatedColumns++;
         }
@@ -275,28 +275,42 @@ namespace MilbrandtFPDB
         {
             bool? result = LaunchAddEditWizard(AddEditWizardType.Add);
 
-            dgSitePlans.Focus();
-            if (result.HasValue && result.Value)
-            {
-                if (_vm.SelectedEntry != null)
-                    dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
-                _vm.SaveEntries();
-            }
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
             bool? result = null;
-            if (dgSitePlans.SelectedItems.Count > 1)
-            {
-                BatchEditWizard wizard = new BatchEditWizard(_vm, dgSitePlans.SelectedItems.Cast<SitePlan>());
-                result = wizard.ShowDialog();
-            }
+            //if (dgSitePlans.SelectedItems.Count > 1)
+            //{
+            //    BatchEditWizard wizard = new BatchEditWizard(_vm, dgSitePlans.SelectedItems.Cast<SitePlan>());
+            //    result = wizard.ShowDialog();
+            //}
+            //else
+            //{
+                result = LaunchAddEditWizard(AddEditWizardType.Edit);
+            //}
+
+        }
+
+        private bool? LaunchAddEditWizard(AddEditWizardType type)
+        {
+            Window wizard;
+
+            if (type == AddEditWizardType.Add)
+                wizard = new AddEditWizard(type, _vm);
             else
             {
-                result = LaunchAddEditWizard(AddEditWizardType.Edit);
+                if (dgSitePlans.SelectedItems.Count == 0)
+                    return null;
+                else if (dgSitePlans.SelectedItems.Count > 1)
+                    wizard = new BatchEditWizard(_vm, dgSitePlans.SelectedItems.Cast<SitePlan>());
+                else
+                    wizard = new AddEditWizard(type, _vm, (SitePlan)dgSitePlans.SelectedItem);
             }
 
+            pdfViewer.ReleaseDocument();
+
+            bool? result = wizard.ShowDialog();
 
             dgSitePlans.Focus();
             if (result.HasValue && result.Value)
@@ -305,23 +319,9 @@ namespace MilbrandtFPDB
                     dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
                 _vm.SaveEntries();
             }
-        }
+            UpdatePreview(_vm.SelectedEntry.FilePath);
 
-        private bool? LaunchAddEditWizard(AddEditWizardType type)
-        {
-            AddEditWizard wizard;
-
-            if (type == AddEditWizardType.Add)
-                wizard = new AddEditWizard(type, _vm);
-            else
-            {
-                if (dgSitePlans.SelectedItems.Count != 1)
-                    return null;
-
-                wizard = new AddEditWizard(type, _vm, (SitePlan)dgSitePlans.SelectedItem);
-            }
-
-            return wizard.ShowDialog();
+            return result;
         }
 
         private void btnSettings_Click(object sender, RoutedEventArgs e)

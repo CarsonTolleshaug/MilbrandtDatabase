@@ -266,12 +266,10 @@ namespace MilbrandtFPDB
                 throw new ArgumentException("Unable to find floor plan file");
 
             // Force pdf paths to exist if specified
-            bool hasAdditionalPdfs = false;
             foreach (KeyValueWrapper pdfPath in AdditionalPdfPaths)
             {
                 if (!String.IsNullOrWhiteSpace(pdfPath.Value))
                 {
-                    hasAdditionalPdfs = true;
                     if (!File.Exists(pdfPath.Value))
                         throw new ArgumentException("Unable to find Pdf:\n" + pdfPath.Value);
                 }
@@ -304,35 +302,14 @@ namespace MilbrandtFPDB
                     FilePath = Settings.GetStandardPdfFilename(projNum, plan + "_" + i);
             }
 
-            if (!hasAdditionalPdfs)
+            // use the temp pdf builder and then copy it to the file path location
+            string temp_path = BuildTempCompositePdf();
+            if (temp_path == null)
             {
-                if (mainPdfPath != FilePath)
-                {
-                    // We simply copy the pdf to the new location
-                    File.Copy(mainPdfPath, FilePath);
-                }
+                throw new ArgumentException("Unable to find floor plan file");
             }
-            else
-            {
-                // Create output doc
-                PdfSharp.Pdf.PdfDocument outputDoc = new PdfSharp.Pdf.PdfDocument();
 
-                // Add floor plan pages
-                AddPagesFromFileToDoc(mainPdfPath, outputDoc);
-                
-                // Add additional pdfs
-                foreach (KeyValueWrapper pdfPath in AdditionalPdfPaths)
-                {
-                    if (!String.IsNullOrWhiteSpace(pdfPath.Value))
-                        AddPagesFromFileToDoc(pdfPath.Value, outputDoc);
-                }
-
-                // Save the new combined document in the previously generated FilePath location
-                using (FileStream file = File.Open(FilePath, FileMode.Create, FileAccess.Write))
-                {
-                    outputDoc.Save(file);
-                }
-            }
+            File.Copy(temp_path, FilePath, true);
         }
 
         public string BuildTempCompositePdf()
@@ -371,9 +348,13 @@ namespace MilbrandtFPDB
 
         private void AddPagesFromFileToDoc(string inputFilename, PdfSharp.Pdf.PdfDocument outputDoc)
         {
-            PdfSharp.Pdf.PdfDocument inputDoc = PdfSharp.Pdf.IO.PdfReader.Open(inputFilename, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
-            foreach (PdfSharp.Pdf.PdfPage page in inputDoc.Pages)
-                outputDoc.AddPage(page);
+            using (FileStream fs = File.Open(inputFilename, FileMode.Open))
+            {
+                PdfSharp.Pdf.PdfDocument inputDoc = PdfSharp.Pdf.IO.PdfReader.Open(fs, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+                foreach (PdfSharp.Pdf.PdfPage page in inputDoc.Pages)
+                    outputDoc.AddPage(page);
+                inputDoc.Close();
+            }
         }
 
         public void AutofillFromFloorPlan()

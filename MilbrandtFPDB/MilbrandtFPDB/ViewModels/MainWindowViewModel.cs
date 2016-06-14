@@ -288,7 +288,7 @@ namespace MilbrandtFPDB
 
             IComparer<string> comparer = StringComparer.CurrentCultureIgnoreCase;
             if (propertyName == "ProjectNumber")
-                comparer = new ProjectNumberSort(ListSortDirection.Ascending);
+                comparer = new ProjectNumberSort(ListSortDirection.Descending);
 
             // handle sq ft differently, because it has range values
             if (propertyName == "SquareFeet")
