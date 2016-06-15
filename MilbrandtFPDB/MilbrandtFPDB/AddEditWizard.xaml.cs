@@ -10,7 +10,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 using System.IO;
 using Microsoft.Win32;
@@ -84,6 +83,16 @@ namespace MilbrandtFPDB
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "PDF files (*.pdf, *.pdfx)|*.pdf;*.pdfx|All files (*.*)|*.*";
 
+            if (_vm.WizardType == AddEditWizardType.Edit)
+            {                
+                DirectoryInfo di = Directory.GetParent(_vm.FilePath);
+                if (di.Exists)
+                {
+                    ofd.InitialDirectory = di.FullName;
+                }
+            }
+
+
             bool? result = ofd.ShowDialog();
             if (result.HasValue && result.Value)
             {
@@ -151,7 +160,7 @@ namespace MilbrandtFPDB
 
             // Root element
             Grid grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(65, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(100, GridUnitType.Pixel) });
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(35, GridUnitType.Pixel) });
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(25, GridUnitType.Pixel) });
@@ -161,6 +170,7 @@ namespace MilbrandtFPDB
             Label label = new Label();
             label.Content = "File " + (index + 2); // start at "File 2"
             label.VerticalAlignment = System.Windows.VerticalAlignment.Center;
+            label.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
 
             // Textbox
             TextBox tb = new TextBox();
@@ -245,6 +255,7 @@ namespace MilbrandtFPDB
 
         private void Window_Closed(object sender, EventArgs e)
         {
+            _vm.RaiseErrorOnPropertyChanged = false;
             pdfViewer.ReleaseDocument();
         }
     }

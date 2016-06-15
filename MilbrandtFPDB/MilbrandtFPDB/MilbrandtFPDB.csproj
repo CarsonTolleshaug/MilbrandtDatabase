@@ -97,6 +97,7 @@
       <DependentUpon>AddEditWizard.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\BitMask.cs" />
+    <Compile Include="Helpers\GeneralHelpers.cs" />
     <Compile Include="UI Components\EntryPropertiesPanel.xaml.cs">
       <DependentUpon>EntryPropertiesPanel.xaml</DependentUpon>
     </Compile>

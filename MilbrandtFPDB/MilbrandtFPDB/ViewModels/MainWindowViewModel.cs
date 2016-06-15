@@ -32,7 +32,16 @@ namespace MilbrandtFPDB
             LoadHeaders();
             _mainThread = mainThreadDispatcher;
 
-            DBHelper.Type = DatabaseType.SingleFamily;
+            switch (MilbrandtFPDB.Properties.Settings.Default.LastUsedDataset)
+            {
+                case "Carriage": DBHelper.Type = DatabaseType.Carriage; break;
+                case "Flats": DBHelper.Type = DatabaseType.Flat; break;
+                case "Townhomes": DBHelper.Type = DatabaseType.Townhome; break;
+                default: DBHelper.Type = DatabaseType.SingleFamily; break;
+            }
+
+
+
             _fileWatcher = new FileSystemWatcher(Directory.GetCurrentDirectory());
             _fileWatcher.Changed += DataFileChanged;
             LoadNewDataset();
@@ -95,7 +104,7 @@ namespace MilbrandtFPDB
             ParameterDisplayNames["ProjectName"] = "Project Name";
             ParameterDisplayNames["ProjectNumber"] = "Project #";
             ParameterDisplayNames["ClientName"] = "Client Name";
-            ParameterDisplayNames["SquareFeet"] = "Square Ft.";
+            ParameterDisplayNames["SquareFeet"] = "Square Feet";
             ParameterDisplayNames["FilePath"] = "PDF File Location";
         }
 
@@ -415,29 +424,54 @@ namespace MilbrandtFPDB
             }
         }
 
-        public Collection<DatabaseType> DatabaseTypes
+        public Collection<string> DatabaseTypes
         {
             get
             {
-                Collection<DatabaseType> types = new Collection<DatabaseType>();
+                Collection<string> types = new Collection<string>();
                 
                 foreach (DatabaseType t in Enum.GetValues(typeof(DatabaseType)))
                 {
-                    types.Add(t);
+                    switch (t)
+                    {
+                        case DatabaseType.Carriage: types.Add(t.ToString()); break;
+                        case DatabaseType.Flat: types.Add("Flats"); break;
+                        case DatabaseType.SingleFamily: types.Add("Single Family"); break;
+                        case DatabaseType.Townhome: types.Add("Townhomes"); break;
+                    }
+                    //types.Add(t);
                 }
 
                 return types;
             }
         }
 
-        public DatabaseType SelectedDatabase
+        public string SelectedDatabase
         {
-            get { return DBHelper.Type; }
+            get 
+            {
+                switch (DBHelper.Type)
+                {
+                    case DatabaseType.Carriage: return "Carriage";
+                    case DatabaseType.Flat: return "Flats";
+                    case DatabaseType.SingleFamily: return "Single Family";
+                    case DatabaseType.Townhome: return "Townhomes";
+                    default: return "Single Family";
+                }
+            }
             set
             {
-                if (DBHelper.Type != value)
+                if (DBHelper.Type.ToString() != value)
                 {
-                    DBHelper.Type = value;
+                    switch (value)
+                    {
+                        case "Carriage" : DBHelper.Type = DatabaseType.Carriage; break;
+                        case "Flats" : DBHelper.Type = DatabaseType.Flat; break;
+                        case "Single Family" : DBHelper.Type = DatabaseType.SingleFamily; break;
+                        case "Townhomes": DBHelper.Type = DatabaseType.Townhome; break;
+                        default: return;
+                    }
+                    MilbrandtFPDB.Properties.Settings.Default.LastUsedDataset = value;
                     OnPropertyChanged("SelectedDatabase");
                     LoadNewDataset();
                 }

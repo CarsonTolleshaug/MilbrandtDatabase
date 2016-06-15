@@ -173,7 +173,12 @@ namespace MilbrandtFPDB
             { 
                 if (_sqft != value)
                 {
-                    _sqft = value;
+                    string tempStr = value.Replace('.', ',');
+                    int temp;
+                    if (int.TryParse(tempStr, out temp))
+                        _sqft = temp.ToString("n0");
+                    else
+                        _sqft = tempStr;
                     OnProperyChanged("SquareFeet");
                 }
             }

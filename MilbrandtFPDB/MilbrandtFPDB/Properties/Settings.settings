@@ -56,5 +56,8 @@
     <Setting Name="ColumnWidths" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="LastUsedDataset" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Single Family</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

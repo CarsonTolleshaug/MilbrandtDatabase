@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Properties="clr-namespace:MilbrandtFPDB.Properties"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"  x:Class="MilbrandtFPDB.MainWindow"
-        Title="Floor Plan Database" 
+        Title="Milbrandt Plans Database" 
         Height="{Binding MainWindowHeight, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}" 
         Width="{Binding MainWindowWidth, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}" 
         Left="{Binding MainWindowXPosition, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}"
@@ -57,7 +57,7 @@
 			SelectionChanged="DataGridSelectionChanged" 
 			AutoGeneratingColumn="DataGridAutoGeneratingColumn" Sorting="DataGridSorting" />
 
-        <GridSplitter Grid.Column="0" Grid.Row="1" HorizontalAlignment="Right" Width="4" Focusable="False" />
+        <GridSplitter Grid.Column="0" Grid.Row="1" HorizontalAlignment="Right" Width="4" Focusable="False" ShowsPreview="True" />
 
         <!-- Right Side (PDF Viewer) -->
         <Rectangle Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="15" >

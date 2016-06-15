@@ -7,8 +7,7 @@
         Width="{Binding AEWizardWidth, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}" 
         Left="{Binding AEWizardXPosition, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
         Top="{Binding AEWizardYPosition, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
-        WindowState="{Binding AEWizardMaximized, Source={x:Static Properties:Settings.Default}, Converter={StaticResource BoolToWindowStateConverter}, Mode=TwoWay}"
-        WindowStyle="ToolWindow" Background="White" MinHeight="300" MinWidth="300" Closed="Window_Closed">
+        WindowState="{Binding AEWizardMaximized, Source={x:Static Properties:Settings.Default}, Converter={StaticResource BoolToWindowStateConverter}, Mode=TwoWay}" Background="White" MinHeight="300" MinWidth="300" Closed="Window_Closed" Icon="Resources/main_icon.png" Topmost="True">
     <Grid x:Name="Root">
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
@@ -40,25 +39,28 @@
         <!-- Title -->
         <Label Content="{Binding TitleText}" FontSize="16" Margin="10,0,10,0"/>
         
-        <Grid x:Name="FileSelectControl" Grid.Row="1" Margin="5,5,10,3">            
+        <Grid x:Name="FileSelectControl" Grid.Row="1" Margin="0,5,10,3">            
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="65" />
+                <ColumnDefinition Width="100" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="35" />
                 <ColumnDefinition Width="25" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="30" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="30" />
             </Grid.RowDefinitions>
+
+
+            <Label Content="PDF File" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             
             <!-- Add Controls -->
-            <Label Content="Floor Plan" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding AddControlVisibility}" />
             <TextBox x:Name="txtFloorPlanPath" Grid.Column="1" Text="{Binding Path=FloorPlanPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1" Visibility="{Binding AddControlVisibility}" />
 
             <!-- Edit Controls -->
-            <Label Content="PDF File" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="{Binding EditControlVisibility}" />
             <TextBox x:Name="txtFilePath" Grid.Column="1" Text="{Binding Path=FilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="1" Visibility="{Binding EditControlVisibility}" />
             
             
@@ -73,7 +75,7 @@
             <StackPanel x:Name="additionalPdfsPanel" Orientation="Vertical" Grid.Row="1" Grid.ColumnSpan="4" >
             </StackPanel>
 
-            <Button x:Name="btnAddPdf" Content="Append another PDF" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Width="140" Click="btnAddPdf_Click" />
+            <Button x:Name="btnAddPdf" Content="Append another PDF" Grid.ColumnSpan="6" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Width="140" Click="btnAddPdf_Click" />
         </Grid>
 
         
@@ -88,9 +90,9 @@
                 <RowDefinition Height="40" />
             </Grid.RowDefinitions>
 
-            <MilbrandtFPDB:EntryPropertiesPanel x:Name="propertiesPanel" Margin="10,10,14,0" />
+            <MilbrandtFPDB:EntryPropertiesPanel x:Name="propertiesPanel" Margin="0,10,0,0" />
             
-            <GridSplitter x:Name="splitter" HorizontalAlignment="Right" Width="4"/>
+            <GridSplitter x:Name="splitter" HorizontalAlignment="Right" Width="4" ShowsPreview="True"/>
 
             <MilbrandtFPDB:PdfViewer x:Name="pdfViewer" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,2,0,0" />
 
@@ -109,8 +111,6 @@
                 <Button x:Name="btnCancel" Content="Cancel" IsCancel="True" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0" />
             </StackPanel>
         </Grid>
-        
-        
 
     </Grid>
 </Window>

@@ -71,7 +71,7 @@ namespace MilbrandtFPDB
         {
             // Create grid to be our root element
             Grid grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(100, GridUnitType.Pixel) });
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(3, GridUnitType.Star) });
             grid.Margin = new System.Windows.Thickness(0, 0, 20, 4);
 
@@ -138,7 +138,7 @@ namespace MilbrandtFPDB
             var dp = sender as DatePicker;
             if (dp == null) return;
 
-            var tb = GetChildOfType<DatePickerTextBox>(dp);
+            var tb = GeneralHelpers.GetChildOfType<DatePickerTextBox>(dp);
             if (tb == null) return;
 
             // Set binding for Text
@@ -162,21 +162,6 @@ namespace MilbrandtFPDB
             DatePicker dp = (sender as DatePicker);
             if (dp != null && dp.SelectedDate.HasValue)
                 _vm.PropertyValues["Date"].Value = dp.SelectedDate.Value.ToShortDateString();
-        }
-
-        // Helper method used to find the DatePickerTextBox child of the DatePicker
-        public static T GetChildOfType<T>(DependencyObject depObj) where T : DependencyObject
-        {
-            if (depObj == null) return null;
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-            {
-                var child = VisualTreeHelper.GetChild(depObj, i);
-
-                var result = (child as T) ?? GetChildOfType<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
     }
 }

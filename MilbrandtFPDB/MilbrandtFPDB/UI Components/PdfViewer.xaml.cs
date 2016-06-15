@@ -24,7 +24,7 @@ namespace MilbrandtFPDB
     public partial class PdfViewer : UserControl
     {
         private PdfViewerViewModel _vm;
-        PdfiumViewer.PdfViewer viewer;
+        private PdfiumViewer.PdfViewer viewer;
 
         public PdfViewer()
         {
@@ -75,11 +75,11 @@ namespace MilbrandtFPDB
                         viewer.Document = doc;
                     },
                     10000);
-                winFormsHost.Visibility = System.Windows.Visibility.Visible;
+                ShowViewer();
             }            
             else
             {
-                winFormsHost.Visibility = System.Windows.Visibility.Hidden;
+                HideViewer();
             }
         }
 
@@ -95,13 +95,23 @@ namespace MilbrandtFPDB
             {
                 viewer.Document = null;
                 doc.Dispose();
-                winFormsHost.Visibility = System.Windows.Visibility.Hidden;
+                HideViewer();
             }
         }
 
         private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Refresh();
+        }
+
+        private void HideViewer()
+        {
+            winFormsHost.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void ShowViewer()
+        {
+            winFormsHost.Visibility = System.Windows.Visibility.Visible;
         }
     }
 }

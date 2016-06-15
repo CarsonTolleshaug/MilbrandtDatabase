@@ -237,5 +237,17 @@ namespace MilbrandtFPDB.Properties {
                 this["ColumnWidths"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Single Family")]
+        public string LastUsedDataset {
+            get {
+                return ((string)(this["LastUsedDataset"]));
+            }
+            set {
+                this["LastUsedDataset"] = value;
+            }
+        }
     }
 }

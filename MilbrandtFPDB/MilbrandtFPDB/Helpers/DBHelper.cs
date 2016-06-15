@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace MilbrandtFPDB
 {
-    public enum DatabaseType { Flat, SingleFamily, Townhome, Carriage }
+    public enum DatabaseType { SingleFamily, Townhome, Carriage, Flat }
 
 
     /// <summary>

@@ -59,5 +59,10 @@ namespace MilbrandtFPDB
                 MessageBox.Show("Unable to save:\n" + ex.Message);
             }
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _vm.RaiseErrorOnPropertyChanged = false;
+        }
     }
 }

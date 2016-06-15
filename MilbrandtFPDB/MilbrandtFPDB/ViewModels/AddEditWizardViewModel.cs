@@ -47,6 +47,12 @@ namespace MilbrandtFPDB
             InitializeValues();
         }
 
+        public bool RaiseErrorOnPropertyChanged
+        {
+            get { return _raiseErrorOnPropertyChanged; }
+            set { _raiseErrorOnPropertyChanged = value; }
+        }
+
         private void EntryPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (_raiseErrorOnPropertyChanged)

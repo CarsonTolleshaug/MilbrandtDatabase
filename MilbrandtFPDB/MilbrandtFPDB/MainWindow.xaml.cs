@@ -73,15 +73,6 @@ namespace MilbrandtFPDB
             else
                 btnEdit.Content = "Edit Entry";
 
-            // put keyboard focus on the selected cell
-            //DataGridRow row = dgSitePlans.ItemContainerGenerator.ContainerFromIndex(dgSitePlans.SelectedIndex) as DataGridRow; 
-            //if (row != null)
-            //{
-            //    DataGridCell cell = GetCell(dgSitePlans, row, 0);
-            //    if(cell != null)
-            //        cell.Focus();
-            //}
-
             UpdatePreview();
         }
 
@@ -109,6 +100,21 @@ namespace MilbrandtFPDB
             {
                 DataGridTextColumn newCol = new DataGridTextColumn();
                 newCol.Binding = new Binding("Date") { StringFormat = "{0:MM/dd/yyyy}" };
+                e.Column = newCol;
+            }
+
+            // Setting Right-Justify for square feet
+            if (header == "SquareFeet")
+            {
+                DataGridTextColumn newCol = new DataGridTextColumn();
+
+                newCol.Binding = new Binding("SquareFeet");
+
+                Style sqftStyle = new Style(typeof(TextBlock));
+                sqftStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
+                sqftStyle.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(1, 1, 8, 1)));
+                newCol.ElementStyle = sqftStyle;
+
                 e.Column = newCol;
             }
 
@@ -164,6 +170,8 @@ namespace MilbrandtFPDB
             colHeaderStyle.Triggers.Add(filterTrigger);
             cb.Template = (ControlTemplate)FindResource("DataGridHeaderComboBoxStyle");
             cb.Style = colHeaderStyle;
+
+            
 
             // Set default sorting
             if (header == "ProjectNumber")
@@ -227,34 +235,34 @@ namespace MilbrandtFPDB
 
 
 
-        //private static DataGridCell GetCell(DataGrid dataGrid, DataGridRow rowContainer, int column)
-        //{
-        //    if (rowContainer != null)
-        //    {
-        //        DataGridCellsPresenter presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
-        //        if (presenter == null)
-        //        {
-        //            /* if the row has been virtualized away, call its ApplyTemplate() method
-        //             * to build its visual tree in order for the DataGridCellsPresenter
-        //             * and the DataGridCells to be created */
-        //            rowContainer.ApplyTemplate();
-        //            presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
-        //        }
-        //        if (presenter != null)
-        //        {
-        //            DataGridCell cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
-        //            if (cell == null)
-        //            {
-        //                /* bring the column into view
-        //                 * in case it has been virtualized away */
-        //                dataGrid.ScrollIntoView(rowContainer, dataGrid.Columns[column]);
-        //                cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
-        //            }
-        //            return cell;
-        //        }
-        //    }
-        //    return null;
-        //}
+        private static DataGridCell GetCell(DataGrid dataGrid, DataGridRow rowContainer, int column)
+        {
+            if (rowContainer != null)
+            {
+                DataGridCellsPresenter presenter = GeneralHelpers.GetChildOfType<DataGridCellsPresenter>(rowContainer);
+                if (presenter == null)
+                {
+                    /* if the row has been virtualized away, call its ApplyTemplate() method
+                     * to build its visual tree in order for the DataGridCellsPresenter
+                     * and the DataGridCells to be created */
+                    rowContainer.ApplyTemplate();
+                    presenter = GeneralHelpers.GetChildOfType<DataGridCellsPresenter>(rowContainer);
+                }
+                if (presenter != null)
+                {
+                    DataGridCell cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+                    if (cell == null)
+                    {
+                        /* bring the column into view
+                         * in case it has been virtualized away */
+                        dataGrid.ScrollIntoView(rowContainer, dataGrid.Columns[column]);
+                        cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+                    }
+                    return cell;
+                }
+            }
+            return null;
+        }
 
 
         #endregion
@@ -342,6 +350,8 @@ namespace MilbrandtFPDB
                     wizard = new AddEditWizard(type, _vm, (SitePlan)dgSitePlans.SelectedItem);
             }
 
+            wizard.Owner = this;
+
             bool? result = wizard.ShowDialog();
 
             dgSitePlans.Focus();
@@ -355,12 +365,25 @@ namespace MilbrandtFPDB
             }
             UpdatePreview();
 
+
+            // put keyboard focus on the selected cell
+            if (dgSitePlans.SelectedIndex >= 0)
+            {
+                DataGridRow row = dgSitePlans.ItemContainerGenerator.ContainerFromIndex(dgSitePlans.SelectedIndex) as DataGridRow;
+                if (row != null)
+                {
+                    DataGridCell cell = GetCell(dgSitePlans, row, 0);
+                    if (cell != null)
+                        cell.Focus();
+                }
+            }
+
             return result;
         }
 
         private void btnSettings_Click(object sender, RoutedEventArgs e)
         {
-            SettingsWindow settingsWindow = new SettingsWindow();
+            SettingsWindow settingsWindow = new SettingsWindow() { Owner = this };
             bool? result = settingsWindow.ShowDialog();
             if (result.HasValue && result.Value)
             {

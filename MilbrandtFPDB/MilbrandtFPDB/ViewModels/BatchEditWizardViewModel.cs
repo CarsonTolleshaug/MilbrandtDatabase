@@ -37,12 +37,18 @@ namespace MilbrandtFPDB
             InitializeValues();
         }
 
+        public bool RaiseErrorOnPropertyChanged
+        {
+            get { return _raiseErrorOnPropertyChanged; }
+            set { _raiseErrorOnPropertyChanged = value; }
+        }
+
         private void entry_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (_raiseErrorOnPropertyChanged)
             {
                 _raiseErrorOnPropertyChanged = false;
-                OnErrorOccured("Someone else has made changes to one the entries you were editing. Please try again if you wish to make additional changes.");
+                OnErrorOccured("Someone else has made changes to one of the entries you were editing. Please try again if you wish to make additional changes.");
             }
         }
 
