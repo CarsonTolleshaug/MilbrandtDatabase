@@ -16,6 +16,7 @@ using System.IO;
 using System.Timers;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Windows.Controls.Primitives;
 
 namespace MilbrandtFPDB
 {
@@ -72,14 +73,16 @@ namespace MilbrandtFPDB
             else
                 btnEdit.Content = "Edit Entry";
 
-            try
-            {
-                UpdatePreview((dgSitePlans.SelectedItem as SitePlan).FilePath);
-            }
-            catch (Exception ex)
-            {
-                UpdatePreview(null);
-            }
+            // put keyboard focus on the selected cell
+            //DataGridRow row = dgSitePlans.ItemContainerGenerator.ContainerFromIndex(dgSitePlans.SelectedIndex) as DataGridRow; 
+            //if (row != null)
+            //{
+            //    DataGridCell cell = GetCell(dgSitePlans, row, 0);
+            //    if(cell != null)
+            //        cell.Focus();
+            //}
+
+            UpdatePreview();
         }
 
 
@@ -223,14 +226,52 @@ namespace MilbrandtFPDB
         }
 
 
+
+        //private static DataGridCell GetCell(DataGrid dataGrid, DataGridRow rowContainer, int column)
+        //{
+        //    if (rowContainer != null)
+        //    {
+        //        DataGridCellsPresenter presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
+        //        if (presenter == null)
+        //        {
+        //            /* if the row has been virtualized away, call its ApplyTemplate() method
+        //             * to build its visual tree in order for the DataGridCellsPresenter
+        //             * and the DataGridCells to be created */
+        //            rowContainer.ApplyTemplate();
+        //            presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
+        //        }
+        //        if (presenter != null)
+        //        {
+        //            DataGridCell cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+        //            if (cell == null)
+        //            {
+        //                /* bring the column into view
+        //                 * in case it has been virtualized away */
+        //                dataGrid.ScrollIntoView(rowContainer, dataGrid.Columns[column]);
+        //                cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+        //            }
+        //            return cell;
+        //        }
+        //    }
+        //    return null;
+        //}
+
+
         #endregion
 
 
         #region Pdf Viewer
 
-        private void UpdatePreview(string file)
+        private void UpdatePreview()
         {
-            pdfViewer.PdfFilePath = file;
+            try
+            {
+                pdfViewer.PdfFilePath = _vm.SelectedEntry.FilePath;
+            }
+            catch (Exception ex)
+            {
+                pdfViewer.PdfFilePath = "";
+            }
         }
 
         #endregion
@@ -244,6 +285,7 @@ namespace MilbrandtFPDB
             {
                 try
                 {
+                    pdfViewer.ReleaseDocument();
                     sp.Open();
                 }
                 catch (Exception ex)
@@ -273,23 +315,13 @@ namespace MilbrandtFPDB
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            bool? result = LaunchAddEditWizard(AddEditWizardType.Add);
+            LaunchAddEditWizard(AddEditWizardType.Add);
 
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            bool? result = null;
-            //if (dgSitePlans.SelectedItems.Count > 1)
-            //{
-            //    BatchEditWizard wizard = new BatchEditWizard(_vm, dgSitePlans.SelectedItems.Cast<SitePlan>());
-            //    result = wizard.ShowDialog();
-            //}
-            //else
-            //{
-                result = LaunchAddEditWizard(AddEditWizardType.Edit);
-            //}
-
+            LaunchAddEditWizard(AddEditWizardType.Edit);
         }
 
         private bool? LaunchAddEditWizard(AddEditWizardType type)
@@ -316,10 +348,12 @@ namespace MilbrandtFPDB
             if (result.HasValue && result.Value)
             {
                 if (_vm.SelectedEntry != null)
+                {
                     dgSitePlans.ScrollIntoView(_vm.SelectedEntry);
+                }
                 _vm.SaveEntries();
             }
-            UpdatePreview(_vm.SelectedEntry.FilePath);
+            UpdatePreview();
 
             return result;
         }

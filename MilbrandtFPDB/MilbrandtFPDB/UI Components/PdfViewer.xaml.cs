@@ -85,6 +85,7 @@ namespace MilbrandtFPDB
             {
                 viewer.Document = null;
                 doc.Dispose();
+                winFormsHost.Visibility = System.Windows.Visibility.Hidden;
             }
         }
     }
