@@ -6,7 +6,23 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid x:Name="mGrid">
-        <Label Content="Preview Unavailable" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+        <Label VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" MouseDoubleClick="Label_MouseDoubleClick" >
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Preview Unavailable" HorizontalAlignment="Center"/>
+                <TextBlock Text="Double click to refresh" HorizontalAlignment="Center" >
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PdfFilePath}" Value="" >
+                                    <Setter Property="Visibility" Value="Hidden" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </Label>
+
         <WindowsFormsHost x:Name="winFormsHost" Visibility="Hidden" />
     </Grid>
 </UserControl>

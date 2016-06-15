@@ -18,13 +18,14 @@ namespace MilbrandtFPDB
         public event EventHandler<string> ErrorOccured;
         
         public const string VALUE_ANY = "(Any)";
-        private Dictionary<int, SitePlan> entries = new Dictionary<int, SitePlan>();
+        private Dictionary<int, SitePlan> _entries = new Dictionary<int, SitePlan>();
         private Dictionary<string, ObservableCollection<string>> _availableValues = new Dictionary<string,ObservableCollection<string>>();
         private SitePlan _selectedEntry;
         private FileSystemWatcher _fileWatcher;
         private Dispatcher _mainThread;
         private bool _preventSave;
 
+        // Main Constructor
         public MainWindowViewModel(Dispatcher mainThreadDispatcher)
         {
             DisplayedEntries = new ObservableCollection<SitePlan>();
@@ -36,6 +37,23 @@ namespace MilbrandtFPDB
             _fileWatcher.Changed += DataFileChanged;
             LoadNewDataset();
         }
+
+        // Test Constructor
+        public MainWindowViewModel(IEnumerable<SitePlan> entries)
+        {
+            // don't want our unit tests messing with our data
+            _preventSave = true;
+
+            foreach (SitePlan sp in entries)
+                AddEntry(sp, false);
+
+            DisplayedEntries = new ObservableCollection<SitePlan>();
+            LoadHeaders();
+            ResetHeaderComboBoxes();
+            RefreshDisplay();
+            UpdateAvailableValues();
+        }
+
 
         private void DataFileChanged(object sender, FileSystemEventArgs e)
         {
@@ -97,7 +115,7 @@ namespace MilbrandtFPDB
 
         private void LoadEntries()
         {
-            entries.Clear();
+            _entries.Clear();
             List<SitePlan> data;
 
             try
@@ -124,7 +142,7 @@ namespace MilbrandtFPDB
         {
             try
             {
-                DBHelper.Update(entries);
+                DBHelper.Update(_entries);
                 _fileWatcher.EnableRaisingEvents = true;
             }
             catch (Exception ex)
@@ -155,7 +173,7 @@ namespace MilbrandtFPDB
 
         public void AddEntry(SitePlan sp, bool refreshLists = true)
         {
-            entries.Add(sp.ID, sp);
+            _entries.Add(sp.ID, sp);
 
             sp.PropertyChanged += SitePlanPropertyChanged;
 
@@ -175,7 +193,7 @@ namespace MilbrandtFPDB
 
         public void RemoveEntry(SitePlan sp)
         {
-            if (entries.Remove(sp.ID))
+            if (_entries.Remove(sp.ID))
             {
                 DisplayedEntries.Remove(sp);
             }
@@ -192,7 +210,7 @@ namespace MilbrandtFPDB
         public void RefreshDisplay()
         {
             DisplayedEntries.Clear();
-            foreach(SitePlan sp in entries.Values)
+            foreach(SitePlan sp in _entries.Values)
             {
                 bool match = true;
                 foreach(string property in SitePlan.Properties)
@@ -267,7 +285,7 @@ namespace MilbrandtFPDB
             {
                 return;
             }
-            else if (entries.Count == 0) // Edge case if something goes wrong
+            else if (_entries.Count == 0) // Edge case if something goes wrong
             {
                 // Clear list of all but "Any"
                 int i = 0;
@@ -375,7 +393,7 @@ namespace MilbrandtFPDB
 
         public IEnumerable<SitePlan> Entries
         {
-            get { return entries.Values; }
+            get { return _entries.Values; }
         }
 
         public ObservableCollection<SitePlan> DisplayedEntries

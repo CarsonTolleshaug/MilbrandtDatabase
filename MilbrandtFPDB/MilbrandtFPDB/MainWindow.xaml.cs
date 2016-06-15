@@ -285,7 +285,7 @@ namespace MilbrandtFPDB
             {
                 try
                 {
-                    pdfViewer.ReleaseDocument();
+                    //pdfViewer.ReleaseDocument();
                     sp.Open();
                 }
                 catch (Exception ex)
@@ -328,6 +328,8 @@ namespace MilbrandtFPDB
         {
             Window wizard;
 
+            pdfViewer.ReleaseDocument();
+
             if (type == AddEditWizardType.Add)
                 wizard = new AddEditWizard(type, _vm);
             else
@@ -339,8 +341,6 @@ namespace MilbrandtFPDB
                 else
                     wizard = new AddEditWizard(type, _vm, (SitePlan)dgSitePlans.SelectedItem);
             }
-
-            pdfViewer.ReleaseDocument();
 
             bool? result = wizard.ShowDialog();
 

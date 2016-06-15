@@ -14,20 +14,62 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using PdfiumViewer;
+using System.ComponentModel;
 
 namespace MilbrandtFPDB
 {
+    public class PdfViewerViewModel : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private string _pdfFilePath;
+
+        public PdfViewerViewModel()
+        {
+            _pdfFilePath = "";
+        }
+
+        public string PdfFilePath
+        {
+            get
+            {
+                if (!File.Exists(_pdfFilePath))
+                    return "";
+                return _pdfFilePath;
+            }
+            set
+            {
+                if (_pdfFilePath != value)
+                {
+                    _pdfFilePath = value;
+                    OnPropertyChanged("PdfFilePath");
+                }
+            }
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+
     /// <summary>
     /// Interaction logic for PdfViewer.xaml
     /// </summary>
     public partial class PdfViewer : UserControl
     {
-        private string _pdfFilePath;
+        private PdfViewerViewModel _vm;
         PdfiumViewer.PdfViewer viewer;
 
         public PdfViewer()
         {
             InitializeComponent();
+
+            _vm = new PdfViewerViewModel();
+            DataContext = _vm;
 
             viewer = new PdfiumViewer.PdfViewer();
             viewer.ShowBookmarks = false;
@@ -49,7 +91,7 @@ namespace MilbrandtFPDB
 
         public string PdfFilePath
         {
-            get { return _pdfFilePath; }
+            get { return _vm.PdfFilePath; }
             set
             {
                 DrawPDF(value);
@@ -58,13 +100,13 @@ namespace MilbrandtFPDB
 
         private void DrawPDF(string filepath)
         {
-            _pdfFilePath = filepath;
+            _vm.PdfFilePath = filepath;
 
             bool exists = File.Exists(filepath);
             if (!String.IsNullOrWhiteSpace(filepath) && exists)
             {
                 PdfDocument doc = null;
-                using (FileStream fs = File.Open(filepath, FileMode.Open))
+                using (FileStream fs = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     doc = PdfDocument.Load(fs);
                     fs.Close();
@@ -78,6 +120,11 @@ namespace MilbrandtFPDB
             }
         }
 
+        public void Refresh()
+        {
+            DrawPDF(_vm.PdfFilePath);
+        }
+
         public void ReleaseDocument()
         {
             PdfDocument doc = viewer.Document;
@@ -87,6 +134,11 @@ namespace MilbrandtFPDB
                 doc.Dispose();
                 winFormsHost.Visibility = System.Windows.Visibility.Hidden;
             }
+        }
+
+        private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Refresh();
         }
     }
 }

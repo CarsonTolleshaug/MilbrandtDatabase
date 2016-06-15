@@ -60,8 +60,61 @@ namespace FPDBUnitTests
             for (int i = 0; i < plans.Count; i++)
             {
                 // The project name is the sort order (starting at 1)
-                Assert.AreEqual(plans[i].ProjectName, (i + 1).ToString());
+                Assert.AreEqual((i + 1).ToString(), plans[i].ProjectName);
             }
+        }
+
+        [TestMethod]
+        public void AvailableValuesTest()
+        {
+            const int NUM_ENTRIES = 4;
+
+            string[] projectNumbers =   { "1111", "1111", "0222", "9999" };
+            string[] projectNames =     { "AAAA", "BBBB", "AAAA", "AAAA" };
+            string[] locations =        { "XXXX", "XXXX", "YYYY", "ZZZZ" };
+            string[] squareFeets =      { "1025", "2025", "2000", "501"  };
+            string[] dates = { "01/10/2014", "01/09/2016", "03/10/2014", "12/15/2015" };
+
+
+            List<SitePlan> plans = new List<SitePlan>();
+            for (int i = 0; i < NUM_ENTRIES; i++)
+            {
+                plans.Add(new SitePlan() {
+                    ProjectNumber = projectNumbers[i],
+                    ProjectName = projectNames[i],
+                    Location = locations[i],
+                    SquareFeet = squareFeets[i],
+                    Date = DateTime.Parse(dates[i])
+                });
+            }
+
+            MainWindowViewModel vm = new MainWindowViewModel(plans);
+
+            //Assert.AreEqual()
+        }
+
+        [TestMethod]
+        public void FiltersTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void AddEntryTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void EditSingleEntryTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void EditMultipleEntriesTest()
+        {
+
         }
     }
 }
