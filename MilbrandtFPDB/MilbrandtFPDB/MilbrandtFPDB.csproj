@@ -117,6 +117,7 @@
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\PdfViewerViewModel.cs" />
     <Compile Include="ViewModels\SettingsWindowViewModel.cs" />
     <Compile Include="SitePlan.cs" />
     <Compile Include="Helpers\Converters.cs" />

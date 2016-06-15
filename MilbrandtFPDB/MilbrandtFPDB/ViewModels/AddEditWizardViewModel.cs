@@ -348,13 +348,16 @@ namespace MilbrandtFPDB
 
         private void AddPagesFromFileToDoc(string inputFilename, PdfSharp.Pdf.PdfDocument outputDoc)
         {
-            using (FileStream fs = File.Open(inputFilename, FileMode.Open))
+            //using (FileStream fs = File.Open(inputFilename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+
+            DBHelper.TryToUseFile(inputFilename, (sr) =>
             {
-                PdfSharp.Pdf.PdfDocument inputDoc = PdfSharp.Pdf.IO.PdfReader.Open(fs, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+                PdfSharp.Pdf.PdfDocument inputDoc = PdfSharp.Pdf.IO.PdfReader.Open(sr.BaseStream, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
                 foreach (PdfSharp.Pdf.PdfPage page in inputDoc.Pages)
                     outputDoc.AddPage(page);
                 inputDoc.Close();
-            }
+            },
+            10000);
         }
 
         public void AutofillFromFloorPlan()

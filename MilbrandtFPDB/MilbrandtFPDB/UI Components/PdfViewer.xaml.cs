@@ -18,44 +18,6 @@ using System.ComponentModel;
 
 namespace MilbrandtFPDB
 {
-    public class PdfViewerViewModel : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private string _pdfFilePath;
-
-        public PdfViewerViewModel()
-        {
-            _pdfFilePath = "";
-        }
-
-        public string PdfFilePath
-        {
-            get
-            {
-                if (!File.Exists(_pdfFilePath))
-                    return "";
-                return _pdfFilePath;
-            }
-            set
-            {
-                if (_pdfFilePath != value)
-                {
-                    _pdfFilePath = value;
-                    OnPropertyChanged("PdfFilePath");
-                }
-            }
-        }
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-    }
-
     /// <summary>
     /// Interaction logic for PdfViewer.xaml
     /// </summary>
@@ -106,12 +68,13 @@ namespace MilbrandtFPDB
             if (!String.IsNullOrWhiteSpace(filepath) && exists)
             {
                 PdfDocument doc = null;
-                using (FileStream fs = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    doc = PdfDocument.Load(fs);
-                    fs.Close();
-                }
-                viewer.Document = doc;
+                DBHelper.TryToUseFile(filepath,
+                    (sr) =>
+                    {
+                        doc = PdfDocument.Load(sr.BaseStream);
+                        viewer.Document = doc;
+                    },
+                    10000);
                 winFormsHost.Visibility = System.Windows.Visibility.Visible;
             }            
             else
