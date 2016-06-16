@@ -4,7 +4,7 @@
         xmlns:Properties="clr-namespace:MilbrandtFPDB.Properties"
         Title="Batch Edit Wizard" 
         Height="450" 
-        Width="400" Closing="Window_Closing" Icon="Resources/main_icon.png" Topmost="True">
+        Width="400" Closing="Window_Closing" Icon="Resources/main_icon.png">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />

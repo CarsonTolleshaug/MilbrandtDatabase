@@ -8,7 +8,7 @@
         Left="{Binding SettingsWindowXPosition, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
         Top="{Binding SettingsWindowYPosition, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
         WindowState="{Binding SettingsWindowMaximized, Source={x:Static Properties:Settings.Default}, Converter={StaticResource BoolToWindowStateConverter}, Mode=TwoWay}"
-        MinHeight="290" MinWidth="250" SizeToContent="Height" ScrollViewer.CanContentScroll="True" WindowStyle="ToolWindow" Topmost="True">
+        MinHeight="290" MinWidth="250" SizeToContent="Height" ScrollViewer.CanContentScroll="True" WindowStyle="ToolWindow">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />

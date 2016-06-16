@@ -18,6 +18,8 @@ namespace MilbrandtFPDB
         private string _pdfFilePath;
         private MemoryStream _memStream;
         private double _zoom;
+        private int _pageNumber;
+        private int _pageCount;
 
         public PdfViewerViewModel()
         {
@@ -56,6 +58,35 @@ namespace MilbrandtFPDB
             }
         }
 
+        public int PageNumber
+        {
+            get 
+            {
+                return _pageNumber;
+            }
+            set
+            {
+                if (value != _pageNumber && value >= 0 && value <= PageCount)
+                {
+                    _pageNumber = value;
+                    OnPropertyChanged("PageNumber");
+                }
+            }
+        }
+
+        public int PageCount
+        {
+            get { return _pageCount; }
+            set
+            {
+                if (_pageCount != value && value >= 0)
+                {
+                    _pageCount = value;
+                    OnPropertyChanged("PageCount");
+                }
+            }
+        }
+
         public async Task<MemoryStream> GetPdfMemStreamAsync()
         {
             if (_memStream != null)
@@ -64,6 +95,9 @@ namespace MilbrandtFPDB
                 _memStream.Dispose();
                 _memStream = null;
             }
+
+            PageNumber = 0;
+            PageCount = 0;
 
             if (File.Exists(PdfFilePath))
             {

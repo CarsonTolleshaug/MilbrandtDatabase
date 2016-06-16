@@ -27,8 +27,10 @@ namespace MilbrandtFPDB
     {
         private PdfViewerViewModel _vm;
 
-        private const double ZOOM_SMALL_COEF = 0.01;
-        private const double ZOOM_LARGE_COEF = 0.1;
+        private const double ZOOM_SMALL_COEF = 0.001;
+        private const double ZOOM_LARGE_COEF = 0.05;
+        private readonly int MARGIN;
+        private readonly int SCROLL_OFFSET;
 
         private CancellationTokenSource tokenSource;
         private Process currentProcess = Process.GetCurrentProcess();
@@ -46,6 +48,8 @@ namespace MilbrandtFPDB
             _pages = new List<BitmapSource>();
 
             scrollBar.Minimum = 0;
+            MARGIN = (int)imgDisplay.Margin.Bottom;
+            SCROLL_OFFSET = (MARGIN * 2) + 19;
         }
 
         public string PdfFilePath
@@ -147,8 +151,10 @@ namespace MilbrandtFPDB
                     if (_pages.Count == 1)
                     {
                         imgDisplay.Source = _pages[0];
-                        Zoom = Math.Min((hScrollViewer.ActualHeight - 10) / imgDisplay.Source.Height,
-                            (hScrollViewer.ActualWidth - 10) / imgDisplay.Source.Width);
+                        _vm.PageCount = pdfDoc.PageCount;
+                        _vm.PageNumber = 1;
+                        Zoom = Math.Min((hScrollViewer.ActualHeight - MARGIN) / imgDisplay.Source.Height,
+                            (hScrollViewer.ActualWidth - MARGIN) / imgDisplay.Source.Width);
                     }
 
                     currentProcess.Refresh();
@@ -164,7 +170,7 @@ namespace MilbrandtFPDB
             }
 
             scrollBar.Value = 0;
-            scrollBar.Maximum = (double)_pages.Count - 0.001;
+            scrollBar.Maximum = (double)_pages.Count - scrollBar.SmallChange;
         }
 
         private BitmapSource RenderPageToMemDC(int page, int width, int height)
@@ -187,12 +193,23 @@ namespace MilbrandtFPDB
         {
             if (_pages != null && _pages.Count > 0)
             {
-                double value = e.NewValue; // +0.5;
-                int page = Math.Min((int)value, _pages.Count - 1);
-                imgDisplay.Source = _pages[page];
+                double value = e.NewValue;
+                int intValue = (int)e.NewValue;
 
-                // scroll to an offset of the remainder (after decimal place) of the scroll bar value
-                hScrollViewer.ScrollToVerticalOffset( (value - (int)value) * (imgDisplay.ActualHeight - hScrollViewer.ActualHeight + 27) );
+                int page = Math.Min(intValue, _pages.Count - 1);
+                imgDisplay.Source = _pages[page];
+                _vm.PageNumber = page + 1;
+
+                // if its the start of a new page
+                if ((int)e.OldValue < intValue)
+                    scrollBar.Value = intValue;
+                else if ((int)e.OldValue > intValue)
+                    scrollBar.Value = (int)e.OldValue - scrollBar.SmallChange;
+                else
+                {
+                    // scroll to an offset of the remainder (after decimal place) of the scroll bar value
+                    hScrollViewer.ScrollToVerticalOffset(((value - intValue) * (imgDisplay.ActualHeight - (hScrollViewer.ActualHeight - SCROLL_OFFSET))));
+                }
             }
         }
 
@@ -229,10 +246,16 @@ namespace MilbrandtFPDB
                 Zoom += e.Delta * ZOOM_SMALL_COEF;
                 e.Handled = true;
             }
+            else if (Keyboard.IsKeyDown(Key.LeftAlt))
+            {
+                // Scroll horizontally
+                hScrollViewer.ScrollToHorizontalOffset(hScrollViewer.HorizontalOffset - e.Delta);
+                e.Handled = true;
+            }
             else
             {
-                // Scroll
-                scrollBar.Value += e.Delta * scrollBar.SmallChange;
+                // Scroll vertically
+                scrollBar.Value -= e.Delta * scrollBar.SmallChange;
                 e.Handled = true;
             }
         }
@@ -247,8 +270,11 @@ namespace MilbrandtFPDB
 
         private void ApplyZoom()
         {
-            imgDisplay.Width = imgDisplay.Source.Width * Zoom;
-            imgDisplay.Height = imgDisplay.Source.Height * Zoom;
+            if (imgDisplay.Source != null)
+            {
+                imgDisplay.Width = imgDisplay.Source.Width * Zoom;
+                imgDisplay.Height = imgDisplay.Source.Height * Zoom;
+            }
         }
 
         private void hScrollViewer_MouseWheel(object sender, MouseWheelEventArgs e)

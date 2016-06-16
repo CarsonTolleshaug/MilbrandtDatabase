@@ -109,7 +109,7 @@
     <Compile Include="ViewModels\BatchEditWizardViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Helpers\DBHelper.cs" />
-    <Compile Include="UI Components\EntryPropertiesPanelViewModel.cs" />
+    <Compile Include="ViewModels\EntryPropertiesPanelViewModel.cs" />
     <Compile Include="Helpers\JobListReader.cs" />
     <Compile Include="UI Components\PdfViewer.xaml.cs">
       <DependentUpon>PdfViewer.xaml</DependentUpon>
