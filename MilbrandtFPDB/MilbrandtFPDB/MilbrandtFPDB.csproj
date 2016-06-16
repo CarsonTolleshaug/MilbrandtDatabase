@@ -96,6 +96,7 @@
     <Compile Include="AddEditWizard.xaml.cs">
       <DependentUpon>AddEditWizard.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\BitmapHelper.cs" />
     <Compile Include="Helpers\BitMask.cs" />
     <Compile Include="Helpers\GeneralHelpers.cs" />
     <Compile Include="UI Components\EntryPropertiesPanel.xaml.cs">
@@ -210,6 +211,8 @@
     <Resource Include="Resources\open_icon.png" />
     <Resource Include="Resources\main_icon.png" />
     <Resource Include="Resources\main_icon.ico" />
+    <Resource Include="Resources\open_icon_w.png" />
+    <Resource Include="Resources\print_icon_w.png" />
     <Content Include="x64\pdfium.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

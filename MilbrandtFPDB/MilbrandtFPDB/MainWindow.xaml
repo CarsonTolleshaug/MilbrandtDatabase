@@ -42,8 +42,6 @@
             <Button x:Name="btnRemove" Content="Remove Entry" VerticalAlignment="Center" Margin="5, 0" Padding="8,2" MinWidth="85" Click="btnRemove_Click" IsEnabled="False"/>
         </StackPanel>
 
-        <Button x:Name="btnOpen" Grid.Column="1" Grid.Row="0" Content="Open PDF" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="8,2" MinWidth="100" Click="btnOpen_Click" IsEnabled="False" />
-
         <Button x:Name="btnSettings" Grid.ColumnSpan="2" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0" Click="btnSettings_Click">
             <Image Width="20" Height="20" Source="Resources/settings_icon.png" Opacity="0.6" />
         </Button>

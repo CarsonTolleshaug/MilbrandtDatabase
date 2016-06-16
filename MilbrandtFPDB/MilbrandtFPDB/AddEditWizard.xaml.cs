@@ -54,31 +54,32 @@ namespace MilbrandtFPDB
         }
 
 
-        private void VMPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private async void VMPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "FilePath" && _vm.WizardType == AddEditWizardType.Edit)
-                UpdatePdfViewer();
+                await UpdatePdfViewer();
             if (e.PropertyName == "FloorPlanPath")
             {
-                UpdatePdfViewer();
                 propertiesPanel.IsEnabled = !String.IsNullOrWhiteSpace(_vm.FloorPlanPath);
+                await UpdatePdfViewer();
             }
         }
 
-        private void UpdatePdfViewer()
+        private async Task UpdatePdfViewer()
         {
             try
             {
-                pdfViewer.ReleaseDocument();
-                pdfViewer.PdfFilePath = _vm.BuildTempCompositePdf();
+                await pdfViewer.DrawPDF(_vm.BuildTempCompositePdf());
+                return;
             }
             catch 
             {
-                pdfViewer.PdfFilePath = "";
             }
+
+            await pdfViewer.DrawPDF("");
         }
 
-        private void btnBrowse_Click(object sender, RoutedEventArgs e)
+        private async void btnBrowse_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "PDF files (*.pdf, *.pdfx)|*.pdf;*.pdfx|All files (*.*)|*.*";
@@ -112,7 +113,7 @@ namespace MilbrandtFPDB
                 {
                     int index = (int)((sender as Button).Tag);
                     _vm.AdditionalPdfPaths[index].Value = ofd.FileName;
-                    UpdatePdfViewer();
+                    await UpdatePdfViewer();
                 }
             }
         }
@@ -121,7 +122,6 @@ namespace MilbrandtFPDB
         {
             try
             {
-                pdfViewer.ReleaseDocument();
                 _vm.Save();
                 this.DialogResult = true;
                 this.Close();
@@ -256,7 +256,8 @@ namespace MilbrandtFPDB
         private void Window_Closed(object sender, EventArgs e)
         {
             _vm.RaiseErrorOnPropertyChanged = false;
-            pdfViewer.ReleaseDocument();
+            //pdfViewer.ReleaseDocument();
+            pdfViewer.Dispose();
         }
     }
 }

@@ -286,5 +286,70 @@ namespace MilbrandtFPDB
 
             return result;
         }
+
+        public static async Task<bool> TryToUseFileAsync(string path, Func<StreamReader, Task> action, int milliSecondMax = Timeout.Infinite)
+        {
+            bool result = false;
+            DateTime dateTimestart = DateTime.Now;
+            Tuple<AutoResetEvent, FileSystemWatcher> tuple = null;
+
+            while (true)
+            {
+                try
+                {
+                    using (var file = new StreamReader(path))
+                    {
+                        await action(file);
+                        result = true;
+                        break;
+                    }
+                }
+                catch (IOException ex)
+                {
+                    // Init only once and only if needed. Prevent against many instantiation in case of multhreaded 
+                    // file access concurrency (if file is frequently accessed by someone else). Better memory usage.
+                    if (tuple == null)
+                    {
+                        var autoResetEvent = new AutoResetEvent(true);
+                        var fileSystemWatcher = new FileSystemWatcher(Path.GetDirectoryName(path))
+                        {
+                            EnableRaisingEvents = true
+                        };
+
+                        fileSystemWatcher.Changed +=
+                            (o, e) =>
+                            {
+                                if (Path.GetFullPath(e.FullPath) == Path.GetFullPath(path))
+                                {
+                                    autoResetEvent.Set();
+                                }
+                            };
+
+                        tuple = new Tuple<AutoResetEvent, FileSystemWatcher>(autoResetEvent, fileSystemWatcher);
+                    }
+
+                    int milliSecond = Timeout.Infinite;
+                    if (milliSecondMax != Timeout.Infinite)
+                    {
+                        milliSecond = (int)(DateTime.Now - dateTimestart).TotalMilliseconds;
+                        if (milliSecond >= milliSecondMax)
+                        {
+                            result = false;
+                            break;
+                        }
+                    }
+
+                    tuple.Item1.WaitOne(milliSecond);
+                }
+            }
+
+            if (tuple != null && tuple.Item1 != null) // Dispose of resources now (don't wait the GC).
+            {
+                tuple.Item1.Dispose();
+                tuple.Item2.Dispose();
+            }
+
+            return result;
+        }
     }    
 }

@@ -60,10 +60,10 @@ namespace MilbrandtFPDB
 
         #region DataGrid
 
-        private void DataGridSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void DataGridSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Allow multiple selections for open & edit
-            btnEdit.IsEnabled = btnOpen.IsEnabled = dgSitePlans.SelectedItems.Count > 0;
+            btnEdit.IsEnabled = dgSitePlans.SelectedItems.Count > 0;
 
             // only one item can be selected for remove
             btnRemove.IsEnabled = dgSitePlans.SelectedItems.Count == 1;
@@ -73,7 +73,7 @@ namespace MilbrandtFPDB
             else
                 btnEdit.Content = "Edit Entry";
 
-            UpdatePreview();
+            await UpdatePreview();
         }
 
 
@@ -270,16 +270,19 @@ namespace MilbrandtFPDB
 
         #region Pdf Viewer
 
-        private void UpdatePreview()
+        private async Task UpdatePreview()
         {
             try
             {
-                pdfViewer.PdfFilePath = _vm.SelectedEntry.FilePath;
+                await pdfViewer.DrawPDF(_vm.SelectedEntry.FilePath);
+                return;
             }
             catch (Exception ex)
             {
-                pdfViewer.PdfFilePath = "";
+                
             }
+
+            await pdfViewer.DrawPDF("");
         }
 
         #endregion
@@ -321,22 +324,19 @@ namespace MilbrandtFPDB
             }
         }
 
-        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        private async void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            LaunchAddEditWizard(AddEditWizardType.Add);
-
+            await LaunchAddEditWizard(AddEditWizardType.Add);
         }
 
-        private void btnEdit_Click(object sender, RoutedEventArgs e)
+        private async void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            LaunchAddEditWizard(AddEditWizardType.Edit);
+            await LaunchAddEditWizard(AddEditWizardType.Edit);
         }
 
-        private bool? LaunchAddEditWizard(AddEditWizardType type)
+        private async Task<bool?> LaunchAddEditWizard(AddEditWizardType type)
         {
             Window wizard;
-
-            pdfViewer.ReleaseDocument();
 
             if (type == AddEditWizardType.Add)
                 wizard = new AddEditWizard(type, _vm);
@@ -363,8 +363,8 @@ namespace MilbrandtFPDB
                 }
                 _vm.SaveEntries();
             }
-            UpdatePreview();
-
+            
+            await UpdatePreview();
 
             // put keyboard focus on the selected cell
             if (dgSitePlans.SelectedIndex >= 0)

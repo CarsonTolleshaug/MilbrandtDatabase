@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 using System.IO;
 using PdfiumViewer;
 using System.ComponentModel;
+using System.Threading;
+using System.Diagnostics;
 
 namespace MilbrandtFPDB
 {
@@ -24,7 +26,14 @@ namespace MilbrandtFPDB
     public partial class PdfViewer : UserControl
     {
         private PdfViewerViewModel _vm;
-        private PdfiumViewer.PdfViewer viewer;
+
+        private const double ZOOM_SMALL_COEF = 0.01;
+        private const double ZOOM_LARGE_COEF = 0.1;
+
+        private CancellationTokenSource tokenSource;
+        private Process currentProcess = Process.GetCurrentProcess();
+        private PdfDocument pdfDoc;
+        private List<BitmapSource> _pages;
 
         public PdfViewer()
         {
@@ -32,86 +41,224 @@ namespace MilbrandtFPDB
 
             _vm = new PdfViewerViewModel();
             DataContext = _vm;
+            _vm.PropertyChanged += _vm_PropertyChanged;
 
-            viewer = new PdfiumViewer.PdfViewer();
-            viewer.ShowBookmarks = false;
-            ZoomMode = PdfViewerZoomMode.FitBest;
-            winFormsHost.Child = viewer;
-        }
+            _pages = new List<BitmapSource>();
 
-        public PdfViewerZoomMode ZoomMode
-        {
-            get { return viewer.ZoomMode; }
-            set { viewer.ZoomMode = value; }
-        }
-
-        public double Zoom
-        {
-            get { return viewer.Renderer.Zoom; }
-            set { viewer.Renderer.Zoom = value; }
+            scrollBar.Minimum = 0;
         }
 
         public string PdfFilePath
         {
             get { return _vm.PdfFilePath; }
-            set
+            private set
             {
-                DrawPDF(value);
+                _vm.PdfFilePath = value;
             }
         }
 
-        private void DrawPDF(string filepath)
+        public double Zoom
         {
-            _vm.PdfFilePath = filepath;
+            get { return _vm.Zoom; }
+            set { _vm.Zoom = value; }
+        }
 
-            bool exists = File.Exists(filepath);
-            if (!String.IsNullOrWhiteSpace(filepath) && exists)
+        public void Dispose()
+        {
+            if (tokenSource != null)
+                tokenSource.Cancel();
+
+            if (pdfDoc != null)
+                pdfDoc.Dispose();
+
+            _vm.Dispose();
+        }
+
+        private void HideViewer()
+        {
+            imgDisplay.Visibility = System.Windows.Visibility.Hidden;
+            previewUnavailableText.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void ShowViewer()
+        {
+            imgDisplay.Visibility = System.Windows.Visibility.Visible;
+            previewUnavailableText.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        public async Task DrawPDF(string filepath)
+        {
+            PdfFilePath = filepath;
+
+            MemoryStream ms = await _vm.GetPdfMemStreamAsync();
+            if (ms != null)
             {
-                PdfDocument doc = null;
-                DBHelper.TryToUseFile(filepath,
-                    (sr) =>
+                try
+                {
+                    pdfDoc = PdfDocument.Load(ms);
+                    if (pdfDoc != null)
                     {
-                        doc = PdfDocument.Load(sr.BaseStream);
-                        viewer.Document = doc;
-                    },
-                    10000);
-                ShowViewer();
-            }            
+                        await RenderPdfDoc();
+                        ShowViewer();
+                    }
+                    else
+                        HideViewer();
+                }
+                catch
+                {
+                    HideViewer();
+                }
+            }
             else
             {
                 HideViewer();
             }
         }
 
-        public void Refresh()
+        private async void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            DrawPDF(_vm.PdfFilePath);
+            await DrawPDF(PdfFilePath);
         }
 
-        public void ReleaseDocument()
+        private async Task RenderPdfDoc()
         {
-            PdfDocument doc = viewer.Document;
-            if (doc != null)
+            
+            imgDisplay.Source = null;
+            _pages.Clear();
+
+            try
             {
-                viewer.Document = null;
-                doc.Dispose();
-                HideViewer();
+                for (int i = 0; i < pdfDoc.PageCount; i++)
+                {
+                    _pages.Add(
+                        await
+                            Task.Run<BitmapSource>(
+                                new Func<BitmapSource>(
+                                    () =>
+                                    {
+                                        tokenSource.Token.ThrowIfCancellationRequested();
+
+                                        return RenderPageToMemDC(i, 
+                                            (int)pdfDoc.PageSizes[i].Width, 
+                                            (int)pdfDoc.PageSizes[i].Height);
+                                    }
+                            ), tokenSource.Token));
+
+                    if (_pages.Count == 1)
+                    {
+                        imgDisplay.Source = _pages[0];
+                        Zoom = Math.Min((hScrollViewer.ActualHeight - 10) / imgDisplay.Source.Height,
+                            (hScrollViewer.ActualWidth - 10) / imgDisplay.Source.Width);
+                    }
+
+                    currentProcess.Refresh();
+
+                    GC.Collect();
+                }
+            }
+            catch (Exception ex)
+            {
+                tokenSource.Cancel();
+                _pages.Clear();
+                MessageBox.Show(ex.Message);
+            }
+
+            scrollBar.Value = 0;
+            scrollBar.Maximum = (double)_pages.Count - 0.001;
+        }
+
+        private BitmapSource RenderPageToMemDC(int page, int width, int height)
+        {
+            var image = pdfDoc.Render(page, width, height, 96, 96, false);
+            return BitmapHelper.ToBitmapSource(image);
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            tokenSource = new CancellationTokenSource();
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {        
+            Dispose();
+        }
+
+        private void scrollBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (_pages != null && _pages.Count > 0)
+            {
+                double value = e.NewValue; // +0.5;
+                int page = Math.Min((int)value, _pages.Count - 1);
+                imgDisplay.Source = _pages[page];
+
+                // scroll to an offset of the remainder (after decimal place) of the scroll bar value
+                hScrollViewer.ScrollToVerticalOffset( (value - (int)value) * (imgDisplay.ActualHeight - hScrollViewer.ActualHeight + 27) );
             }
         }
 
-        private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void btnOpen_Click(object sender, RoutedEventArgs e)
         {
-            Refresh();
+            if (File.Exists(PdfFilePath))
+            {
+                Process openProc = new Process();
+                openProc.StartInfo = new ProcessStartInfo(PdfFilePath);
+                openProc.Start();
+            }
         }
 
-        private void HideViewer()
+        private void btnZoomOut_Click(object sender, RoutedEventArgs e)
         {
-            winFormsHost.Visibility = System.Windows.Visibility.Hidden;
+            Zoom -= ZOOM_LARGE_COEF;
         }
 
-        private void ShowViewer()
+        private void btnZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            winFormsHost.Visibility = System.Windows.Visibility.Visible;
+            Zoom += ZOOM_LARGE_COEF;
+        }
+
+        private void btnPrint_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void UserControl_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                // Zoom
+                Zoom += e.Delta * ZOOM_SMALL_COEF;
+                e.Handled = true;
+            }
+            else
+            {
+                // Scroll
+                scrollBar.Value += e.Delta * scrollBar.SmallChange;
+                e.Handled = true;
+            }
+        }
+
+        private void _vm_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Zoom")
+            {
+                ApplyZoom();
+            }
+        }
+
+        private void ApplyZoom()
+        {
+            imgDisplay.Width = imgDisplay.Source.Width * Zoom;
+            imgDisplay.Height = imgDisplay.Source.Height * Zoom;
+        }
+
+        private void hScrollViewer_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            UserControl_MouseWheel(sender, e);
+        }
+
+        private void hScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            UserControl_MouseWheel(sender, e);
         }
     }
 }
