@@ -216,6 +216,9 @@
     <Resource Include="Resources\add_icon.png" />
     <Resource Include="Resources\edit_icon.png" />
     <Resource Include="Resources\remove_icon.png" />
+    <Resource Include="Resources\Add.png" />
+    <Resource Include="Resources\Edit.png" />
+    <Resource Include="Resources\Remove.png" />
     <Content Include="x64\pdfium.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

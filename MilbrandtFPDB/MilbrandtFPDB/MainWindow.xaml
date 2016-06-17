@@ -46,21 +46,21 @@
             <Label Content="Database:" VerticalAlignment="Center"/>
             <ComboBox x:Name="cbDatabase" ItemsSource="{Binding DatabaseTypes}" SelectedItem="{Binding SelectedDatabase, Mode=TwoWay}" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0, 0, 5, 0" Width="120" IsTabStop="False" Template="{DynamicResource DataGridHeaderComboBoxStyle}"/>
             <Rectangle Fill="LightGray" Height="28" Width="1" VerticalAlignment="Center" Margin="10, 0" ></Rectangle>
-            <Button x:Name="btnAdd" VerticalAlignment="Center" Margin="5, 0" Padding="8,1" MinWidth="85" Click="btnAdd_Click">
+            <Button x:Name="btnAdd" VerticalAlignment="Center" Margin="5, 0" Padding="8,1" MinWidth="115" Click="btnAdd_Click">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="Resources/add_icon.png" Height="20" Opacity="0.6" />
+                    <Image Source="Resources/Add.png" Height="20" Opacity="0.6" />
                     <TextBlock Text="Add Entry" VerticalAlignment="Center" Margin="5,0"/>
                 </StackPanel>
             </Button>
-            <Button x:Name="btnEdit" VerticalAlignment="Center" Margin="5, 0" Padding="8,1" MinWidth="85" Click="btnEdit_Click" IsEnabled="False" >
+            <Button x:Name="btnEdit" VerticalAlignment="Center" Margin="5, 0" Padding="8,1" MinWidth="115" Click="btnEdit_Click" IsEnabled="False" >
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="Resources/edit_icon.png" Height="18" Margin="1" Opacity="0.6" />
+                    <Image Source="Resources/Edit.png" Height="18" Margin="1" />
                     <TextBlock x:Name="btnEditText" Text="Edit Entry" VerticalAlignment="Center" Margin="5,0"/>
                 </StackPanel>
             </Button>
-            <Button x:Name="btnRemove" VerticalAlignment="Center" Margin="5, 0" Padding="8,1" MinWidth="85" Click="btnRemove_Click" IsEnabled="False">
+            <Button x:Name="btnRemove" VerticalAlignment="Center" Margin="5, 0" Padding="8,1" MinWidth="115" Click="btnRemove_Click" IsEnabled="False">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="Resources/remove_icon.png" Height="20" Opacity="0.6" />
+                    <Image Source="Resources/Remove.png" Height="20" Opacity="0.6" />
                     <TextBlock Text="Remove Entry" VerticalAlignment="Center" Margin="5,0"/>
                 </StackPanel>
             </Button>
