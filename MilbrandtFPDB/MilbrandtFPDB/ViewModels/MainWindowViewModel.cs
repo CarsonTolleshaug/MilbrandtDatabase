@@ -16,6 +16,8 @@ namespace MilbrandtFPDB
         public event PropertyChangedEventHandler PropertyChanged;
         public event FileSystemEventHandler DataChanged;
         public event EventHandler<string> ErrorOccured;
+        public event EventHandler DisplayListChanging;
+        public event EventHandler DisplayListChanged;
         
         public const string VALUE_ANY = "(Any)";
         private Dictionary<int, SitePlan> _entries = new Dictionary<int, SitePlan>();
@@ -221,6 +223,10 @@ namespace MilbrandtFPDB
 
         public void RefreshDisplay()
         {
+            // Let the outside world know we're changing display data
+            if (DisplayListChanging != null)
+                DisplayListChanging(this, null);
+
             DisplayedEntries.Clear();
             foreach(SitePlan sp in _entries.Values)
             {
@@ -267,6 +273,10 @@ namespace MilbrandtFPDB
                     }
                 }
             }
+
+            // Let the outside world know we're done changing displayed items
+            if (DisplayListChanged != null)
+                DisplayListChanged(this, null);
         }
 
         private void ResetHeaderComboBoxes()

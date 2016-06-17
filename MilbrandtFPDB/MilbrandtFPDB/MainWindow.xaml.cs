@@ -49,6 +49,9 @@ namespace MilbrandtFPDB
     {
         private MainWindowViewModel _vm;
         private int _generatedColumns = 0;
+        private IInputElement _lastFocus = null;
+        private List<SitePlan> _lastSelection = new List<SitePlan>();
+        private bool _lastFocusInDataGrid = false;
 
         public MainWindow()
         {
@@ -56,7 +59,9 @@ namespace MilbrandtFPDB
 
             _vm = new MainWindowViewModel(this.Dispatcher);
             DataContext = _vm;
-            _vm.ErrorOccured += _vm_ErrorOccured;
+            _vm.ErrorOccured += VM_ErrorOccured;
+            _vm.DisplayListChanging += VM_DisplayListChanging;
+            _vm.DisplayListChanged += VM_DisplayListChanged;
         }
 
         #region DataGrid
@@ -146,6 +151,14 @@ namespace MilbrandtFPDB
             selectBinding.Mode = System.Windows.Data.BindingMode.TwoWay;
             selectBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
             cb.SetBinding(ComboBox.SelectedItemProperty, selectBinding);
+
+            // Set binding for drop down height
+            Binding ddhBinding = new Binding("ActualHeight");
+            ddhBinding.Source = dgSitePlans;
+            ddhBinding.Converter = new MilbrandtFPDB.MathConverter();
+            ddhBinding.ConverterParameter = "(@VALUE - 60)";
+            ddhBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            cb.SetBinding(ComboBox.MaxDropDownHeightProperty, ddhBinding);
 
             // Add comboBox to header
             sp.Children.Add(cb);
@@ -388,9 +401,40 @@ namespace MilbrandtFPDB
         #endregion
 
 
-        private void _vm_ErrorOccured(object sender, string e)
+        private void VM_ErrorOccured(object sender, string e)
         {
             MessageBox.Show(e);
+        }
+
+        private void VM_DisplayListChanging(object sender, EventArgs e)
+        {
+            // store last focus and selected
+            _lastFocus = Keyboard.FocusedElement;
+            _lastSelection.Clear();
+            _lastSelection.AddRange(dgSitePlans.SelectedItems.Cast<SitePlan>());
+            _lastFocusInDataGrid = dgSitePlans.IsFocused || dgSitePlans.IsKeyboardFocused || dgSitePlans.IsKeyboardFocusWithin;
+        }
+
+        private void VM_DisplayListChanged(object sender, EventArgs e)
+        {
+            // restore focus and selection
+            if (_lastFocusInDataGrid)
+            {
+                dgSitePlans.Focus();
+                _lastFocusInDataGrid = false;
+            }
+            foreach (SitePlan sp in _lastSelection)
+                dgSitePlans.SelectedItems.Add(sp);
+            _lastSelection.Clear();
+
+            if (_lastFocus != null)
+            {
+                _lastFocus.Focus();
+                DataGridCell cell = _lastFocus as DataGridCell;
+                if (cell != null)
+                    cell.Focus();
+                _lastFocus = null;
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -401,6 +445,12 @@ namespace MilbrandtFPDB
                 MilbrandtFPDB.Properties.Settings.Default.ColumnWidths[i] =
                     StringToColumnWidthConverter.ConvertToString(dgSitePlans.Columns[i].Width);
             }
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F5)
+                _vm.RefreshDisplay();
         }
     }
 }

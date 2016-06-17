@@ -9,7 +9,7 @@
         Left="{Binding MainWindowXPosition, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}"
         Top="{Binding MainWindowYPosition, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}"
         MinWidth="600" MinHeight="100"
-        Icon="Resources/main_icon.ico" Closing="Window_Closing" >
+        Icon="Resources/main_icon.ico" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown" >
     <Window.WindowState>
         <Binding Converter="{StaticResource BoolToWindowStateConverter}" Mode="TwoWay" Path="MainWindowMaximized" Source="{x:Static Properties:Settings.Default}"/>
     </Window.WindowState>
