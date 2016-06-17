@@ -70,9 +70,9 @@ namespace MilbrandtFPDB
             btnRemove.IsEnabled = dgSitePlans.SelectedItems.Count == 1;
 
             if (dgSitePlans.SelectedItems.Count > 1)
-                btnEdit.Content = "Edit Entries";
+                btnEditText.Text = "Edit Entries";
             else
-                btnEdit.Content = "Edit Entry";
+                btnEditText.Text = "Edit Entry";
 
             UpdatePreview();
         }
@@ -290,6 +290,7 @@ namespace MilbrandtFPDB
             {
                 try
                 {
+                    DBHelper.RequestDocumentRelease(sp.FilePath);
                     sp.Open();
                 }
                 catch (Exception ex)

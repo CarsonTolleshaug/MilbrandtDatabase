@@ -7,7 +7,7 @@
              d:DesignHeight="300" d:DesignWidth="300" PreviewMouseDown="UserControl_PreviewMouseDown" Background="#FF414547" PreviewMouseMove="UserControl_PreviewMouseMove" PreviewMouseWheel="UserControl_PreviewMouseWheel">    
     <Grid x:Name="pdfPanel">
         <Label HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
-            <TextBlock Text="Preview Unavailable" TextAlignment="Center" Foreground="White" TextWrapping="Wrap" />
+            <TextBlock Text="Preview Unavailable" TextAlignment="Center" Foreground="White" TextWrapping="WrapWithOverflow" />
         </Label>
         <WebBrowser x:Name="pdfBrowser" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Hidden" />
     </Grid>

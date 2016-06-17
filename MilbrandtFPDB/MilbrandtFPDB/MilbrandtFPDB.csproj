@@ -213,6 +213,9 @@
     <Resource Include="Resources\main_icon.ico" />
     <Resource Include="Resources\open_icon_w.png" />
     <Resource Include="Resources\print_icon_w.png" />
+    <Resource Include="Resources\add_icon.png" />
+    <Resource Include="Resources\edit_icon.png" />
+    <Resource Include="Resources\remove_icon.png" />
     <Content Include="x64\pdfium.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

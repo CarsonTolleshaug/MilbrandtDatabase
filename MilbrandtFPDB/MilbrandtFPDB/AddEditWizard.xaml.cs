@@ -227,10 +227,9 @@ namespace MilbrandtFPDB
         {
             // Open the PDF in Acrobat
             Process open = new Process();
-            if (_vm.WizardType == AddEditWizardType.Add)
-                open.StartInfo = new ProcessStartInfo(_vm.FloorPlanPath);
-            else
-                open.StartInfo = new ProcessStartInfo(_vm.FilePath);
+            string file = _vm.WizardType == AddEditWizardType.Add ? _vm.FloorPlanPath : _vm.FilePath;
+            DBHelper.RequestDocumentRelease(file);
+            open.StartInfo = new ProcessStartInfo(file);
 
             try
             {
