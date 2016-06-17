@@ -19,6 +19,13 @@ namespace MilbrandtFPDB
     /// </summary>
     public static class DBHelper
     {
+        public static event EventHandler<string> DocumentReleaseNeeded;
+        public static void RequestDocumentRelease(string filepath)
+        {
+            if (DocumentReleaseNeeded != null)
+                DocumentReleaseNeeded(null, filepath);
+        }
+
         public static string DataFile
         {
             get
@@ -65,6 +72,9 @@ namespace MilbrandtFPDB
 
                     writer.WriteElementString("ID", s.ID.ToString());
 
+                    if (s.Removed)
+                        writer.WriteElementString("Removed", "True");
+
                     // Write all the siteplan public properties
                     foreach (string propertyName in SitePlan.Properties)
                         writer.WriteElementString(propertyName, SitePlan.GetProperty(s, propertyName));
@@ -93,17 +103,21 @@ namespace MilbrandtFPDB
             {
                 Read((entry) =>
                 {
-                    SitePlan s = new SitePlan();
+                    // don't read in removed items
+                    if (string.IsNullOrEmpty(ReadValue("Removed", entry)))
+                    {
+                        SitePlan s = new SitePlan();
 
-                    int id = ReadInt("ID", entry);
-                    if (id >= 0)
-                        s.ID = id;
+                        int id = ReadInt("ID", entry);
+                        if (id >= 0)
+                            s.ID = id;
 
-                    // Read or get a blank value for all properties
-                    foreach (string propertyName in SitePlan.Properties)
-                        SitePlan.SetProperty(s, propertyName, ReadValue(propertyName, entry));
+                        // Read or get a blank value for all properties
+                        foreach (string propertyName in SitePlan.Properties)
+                            SitePlan.SetProperty(s, propertyName, ReadValue(propertyName, entry));
 
-                    entryList.Add(s);
+                        entryList.Add(s);
+                    }
                 });
             }
             else if (File.Exists(OldDataFile))
@@ -130,12 +144,17 @@ namespace MilbrandtFPDB
                         // add new entry
                         entries[id] = new SitePlan();
                     }
+                    if (!string.IsNullOrEmpty(ReadValue("Removed", entry)))
+                    {
+                        // set removed
+                        entries[id].Removed = true;
+                    }
 
                     // update property values if different
                     foreach (string propertyName in SitePlan.Properties)
                         SitePlan.SetProperty(entries[id], propertyName, ReadValue(propertyName, entry));
                 }
-            });
+            });            
         }
 
         private const int READ_TIMEOUT = 5000; // 5 seconds
@@ -287,7 +306,7 @@ namespace MilbrandtFPDB
             return result;
         }
 
-        public static async Task<bool> TryToUseFileAsync(string path, Func<StreamReader, Task> action, int milliSecondMax = Timeout.Infinite)
+        public static bool TryToWriteToFile(string path, Action<StreamWriter> action, int milliSecondMax = Timeout.Infinite)
         {
             bool result = false;
             DateTime dateTimestart = DateTime.Now;
@@ -297,9 +316,9 @@ namespace MilbrandtFPDB
             {
                 try
                 {
-                    using (var file = new StreamReader(path))
+                    using (var file = new StreamWriter(path))
                     {
-                        await action(file);
+                        action(file);
                         result = true;
                         break;
                     }
@@ -321,7 +340,12 @@ namespace MilbrandtFPDB
                             {
                                 if (Path.GetFullPath(e.FullPath) == Path.GetFullPath(path))
                                 {
-                                    autoResetEvent.Set();
+                                    // prevent against exception thrown in rare race condition
+                                    try
+                                    {
+                                        autoResetEvent.Set();
+                                    }
+                                    catch (ObjectDisposedException) { }
                                 }
                             };
 
@@ -345,11 +369,13 @@ namespace MilbrandtFPDB
 
             if (tuple != null && tuple.Item1 != null) // Dispose of resources now (don't wait the GC).
             {
+                tuple.Item2.EnableRaisingEvents = false;
                 tuple.Item1.Dispose();
                 tuple.Item2.Dispose();
             }
 
             return result;
         }
+        
     }    
 }

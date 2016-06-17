@@ -99,6 +99,7 @@
     <Compile Include="Helpers\BitmapHelper.cs" />
     <Compile Include="Helpers\BitMask.cs" />
     <Compile Include="Helpers\GeneralHelpers.cs" />
+    <Compile Include="Helpers\SendInputHelper.cs" />
     <Compile Include="UI Components\EntryPropertiesPanel.xaml.cs">
       <DependentUpon>EntryPropertiesPanel.xaml</DependentUpon>
     </Compile>
@@ -119,7 +120,6 @@
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\PdfViewerViewModel.cs" />
     <Compile Include="ViewModels\SettingsWindowViewModel.cs" />
     <Compile Include="SitePlan.cs" />
     <Compile Include="Helpers\Converters.cs" />

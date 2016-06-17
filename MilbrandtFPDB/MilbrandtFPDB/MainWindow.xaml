@@ -9,7 +9,7 @@
         Left="{Binding MainWindowXPosition, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}"
         Top="{Binding MainWindowYPosition, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}"
         MinWidth="600" MinHeight="100"
-        Icon="Resources/main_icon.ico" Closing="Window_Closing">
+        Icon="Resources/main_icon.ico" Closing="Window_Closing" >
     <Window.WindowState>
         <Binding Converter="{StaticResource BoolToWindowStateConverter}" Mode="TwoWay" Path="MainWindowMaximized" Source="{x:Static Properties:Settings.Default}"/>
     </Window.WindowState>
@@ -25,7 +25,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{Binding MainSplitterPosition, Mode=TwoWay, Source={x:Static Properties:Settings.Default}}" 
                               MinWidth="200" 
-                              MaxWidth="{Binding ActualWidth, ConverterParameter=(@VALUE-0), Converter={StaticResource MathConverter}, ElementName=Root}"/>
+                              MaxWidth="{Binding ActualWidth, ConverterParameter=(@VALUE-30), Converter={StaticResource MathConverter}, ElementName=Root}"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -41,10 +41,14 @@
             <Button x:Name="btnEdit" Content="Edit Entry" VerticalAlignment="Center" Margin="5, 0" Padding="8,2" MinWidth="85" Click="btnEdit_Click" IsEnabled="False" />
             <Button x:Name="btnRemove" Content="Remove Entry" VerticalAlignment="Center" Margin="5, 0" Padding="8,2" MinWidth="85" Click="btnRemove_Click" IsEnabled="False"/>
         </StackPanel>
-
-        <Button x:Name="btnSettings" Grid.ColumnSpan="2" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0" Click="btnSettings_Click">
-            <Image Width="20" Height="20" Source="Resources/settings_icon.png" Opacity="0.6" />
-        </Button>
+        <StackPanel x:Name="MenuRightPanel" Grid.ColumnSpan="2" Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Right">
+            <Button x:Name="btnOpenPDF" VerticalAlignment="Center" Click="btnOpenPDF_Click">
+                <Image Width="20" Height="20" Source="Resources/open_icon.png" Opacity="0.6" />
+            </Button>
+            <Button x:Name="btnSettings" Grid.ColumnSpan="2" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0" Click="btnSettings_Click">
+                <Image Width="20" Height="20" Source="Resources/settings_icon.png" Opacity="0.6" />
+            </Button>
+        </StackPanel>
 
         <!-- Left Side (DataGrid) -->
         <DataGrid x:Name="dgSitePlans" Grid.Column="0" Grid.Row="1" Margin="0,0,4,0" 
@@ -68,6 +72,13 @@
             </Rectangle.Fill>
         </Rectangle>
 
+        
         <MilbrandtFPDB:PdfViewer x:Name="pdfViewer" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        
+        
+        <!--
+        <Grid x:Name="pdfPanel" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <WebBrowser x:Name="pdfBrowser" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </Grid> -->
     </Grid>
 </Window>

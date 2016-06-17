@@ -17,6 +17,8 @@ namespace MilbrandtFPDB
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler<string> ErrorOccured;
 
+        private const int READ_TIMEOUT = 1000;
+        private const int WRITE_TIMEOUT = 1000;
         private AddEditWizardType _type;
         private SitePlan _entry;
         private MainWindowViewModel _mainVM;
@@ -307,28 +309,30 @@ namespace MilbrandtFPDB
                 for (int i = 0; File.Exists(FilePath); i++)
                     FilePath = Settings.GetStandardPdfFilename(projNum, plan + "_" + i);
             }
-
-            // use the temp pdf builder and then copy it to the file path location
-            string temp_path = BuildTempCompositePdf();
-            if (temp_path == null)
-            {
-                throw new ArgumentException("Unable to find floor plan file");
-            }
-
-            File.Copy(temp_path, FilePath, true);
+            
+            BuildTempCompositePdf(FilePath);
         }
 
-        public string BuildTempCompositePdf()
+        public string BuildTempCompositePdf(string outputDestination = null)
         {
             string mainPdf = WizardType == AddEditWizardType.Add ? FloorPlanPath : FilePath;
             if (!File.Exists(mainPdf))
-                return null;
+                throw new ArgumentException("Unable to find main PDF file");
 
-            if (!File.Exists(_tempPath))
+            if (outputDestination == null)
             {
-                // make a new temp file
-                _tempPath = Path.Combine(Path.GetTempPath(), "mb_fpdb.pdf");
+                if (!File.Exists(_tempPath))
+                {
+                    // make a new temp file
+                    _tempPath = Path.Combine(Path.GetTempPath(), "mb_fpdb.pdf");
+                }
+
+                outputDestination = _tempPath;
             }
+
+            // tell viewer to release this file
+            DBHelper.RequestDocumentRelease(outputDestination);
+
 
             // Create output doc
             PdfSharp.Pdf.PdfDocument outputDoc = new PdfSharp.Pdf.PdfDocument();
@@ -344,12 +348,20 @@ namespace MilbrandtFPDB
             }
 
             // Save the new combined document in the previously generated temp location
-            using (FileStream file = File.Open(_tempPath, FileMode.Create, FileAccess.Write))
+            bool success = DBHelper.TryToWriteToFile(outputDestination, (sw) => 
             {
-                outputDoc.Save(file);
-            }
+                outputDoc.Save(sw.BaseStream);
+            }, WRITE_TIMEOUT);
 
-            return _tempPath;
+            if (success)
+                return outputDestination;
+            else
+            {
+                if (outputDestination == _tempPath)
+                    throw new ArgumentException("Unable to create temp file for viewing");
+                else
+                    throw new ArgumentException("Unable to generate pdf, it is being used by another process");
+            }
         }
 
         private void AddPagesFromFileToDoc(string inputFilename, PdfSharp.Pdf.PdfDocument outputDoc)
@@ -363,7 +375,7 @@ namespace MilbrandtFPDB
                     outputDoc.AddPage(page);
                 inputDoc.Close();
             },
-            10000);
+            READ_TIMEOUT);
         }
 
         public void AutofillFromFloorPlan()

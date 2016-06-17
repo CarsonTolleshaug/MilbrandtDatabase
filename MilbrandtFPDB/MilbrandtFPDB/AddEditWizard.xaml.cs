@@ -54,45 +54,33 @@ namespace MilbrandtFPDB
         }
 
 
-        private async void VMPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void VMPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "FilePath" && _vm.WizardType == AddEditWizardType.Edit)
-                await UpdatePdfViewer();
+                UpdatePdfViewer();
             if (e.PropertyName == "FloorPlanPath")
             {
                 propertiesPanel.IsEnabled = !String.IsNullOrWhiteSpace(_vm.FloorPlanPath);
-                await UpdatePdfViewer();
+                UpdatePdfViewer();
             }
         }
 
-        private async Task UpdatePdfViewer()
+        private void UpdatePdfViewer()
         {
             try
             {
-                await pdfViewer.DrawPDF(_vm.BuildTempCompositePdf());
-                return;
+                pdfViewer.DrawPDF(_vm.BuildTempCompositePdf());
             }
-            catch 
+            catch
             {
+                pdfViewer.DrawPDF(null);
             }
-
-            await pdfViewer.DrawPDF("");
         }
 
-        private async void btnBrowse_Click(object sender, RoutedEventArgs e)
+        private void btnBrowse_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "PDF files (*.pdf, *.pdfx)|*.pdf;*.pdfx|All files (*.*)|*.*";
-
-            if (_vm.WizardType == AddEditWizardType.Edit)
-            {                
-                DirectoryInfo di = Directory.GetParent(_vm.FilePath);
-                if (di.Exists)
-                {
-                    ofd.InitialDirectory = di.FullName;
-                }
-            }
-
 
             bool? result = ofd.ShowDialog();
             if (result.HasValue && result.Value)
@@ -113,7 +101,7 @@ namespace MilbrandtFPDB
                 {
                     int index = (int)((sender as Button).Tag);
                     _vm.AdditionalPdfPaths[index].Value = ofd.FileName;
-                    await UpdatePdfViewer();
+                    UpdatePdfViewer();
                 }
             }
         }
@@ -227,11 +215,12 @@ namespace MilbrandtFPDB
                 {
                     additionalPdfsPanel.Children.Remove(child);
 
+                    UpdatePdfViewer();
+
                     // return so we don't get an exception for modifying the collection
                     return; 
                 }
             }
-
         }
 
         private void btnOpenPDF_Click(object sender, RoutedEventArgs e)
@@ -256,8 +245,6 @@ namespace MilbrandtFPDB
         private void Window_Closed(object sender, EventArgs e)
         {
             _vm.RaiseErrorOnPropertyChanged = false;
-            //pdfViewer.ReleaseDocument();
-            pdfViewer.Dispose();
         }
     }
 }

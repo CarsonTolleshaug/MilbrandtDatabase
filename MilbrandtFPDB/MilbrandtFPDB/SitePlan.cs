@@ -19,6 +19,7 @@ namespace MilbrandtFPDB
         private int _id;
         private string _projNum, _projName, _clientName, _location, _type, _plan, _width, _depth, _beds, _baths, _sqft, _filePath;
         private DateTime _date;
+        private bool _removed = false;
 
         private static BitMask usedIDs = new BitMask();
 
@@ -40,6 +41,19 @@ namespace MilbrandtFPDB
                     usedIDs[value] = true;
                     usedIDs[_id] = false;
                     _id = value;                    
+                }
+            }
+        }
+
+        internal bool Removed
+        {
+            get { return _removed; }
+            set
+            {
+                if (_removed != value)
+                {
+                    _removed = value;
+                    OnProperyChanged("Removed");
                 }
             }
         }
@@ -265,6 +279,11 @@ namespace MilbrandtFPDB
                 this.SquareFeet = this.Width = this.Depth = "0";
         }
 
+        public void ResetID()
+        {
+            ID = usedIDs.GetFirstAvailableIndex();
+        }
+
         /// <summary>
         /// Opens the file specifed 
         /// for the SitePlan object.
@@ -368,21 +387,6 @@ namespace MilbrandtFPDB
                 return retVal;
             else
                 return -retVal;
-        }
-
-        /// <summary>
-        /// Gets the string to write to
-        /// file for the SitePlan instance.
-        /// </summary>
-        internal string Writestring
-        {
-            get
-            {
-                // NOTE: Add new params here
-                return ProjectNumber + "|" + ProjectName + "|" + ClientName + "|" + Location
-                    + "|" + Plan + "|" + Width + "|" + Depth + "|" + Beds
-                    + "|" + Baths + "|" + SquareFeet + "|" + Date + "|" + FilePath;
-            }
         }
 
         private void OnProperyChanged(string propertyName)

@@ -182,6 +182,11 @@ namespace MilbrandtFPDB
 
         public void AddEntry(SitePlan sp, bool refreshLists = true)
         {
+            // verify were not adding two entries with the same id, this can happen durring concurrent adds
+            if (_entries.ContainsKey(sp.ID))
+            {
+                sp.ResetID();
+            }
             _entries.Add(sp.ID, sp);
 
             sp.PropertyChanged += SitePlanPropertyChanged;
@@ -202,10 +207,8 @@ namespace MilbrandtFPDB
 
         public void RemoveEntry(SitePlan sp)
         {
-            if (_entries.Remove(sp.ID))
-            {
-                DisplayedEntries.Remove(sp);
-            }
+            sp.Removed = true;
+            DisplayedEntries.Remove(sp);
         }
 
         public void ClearFilters()
@@ -221,44 +224,47 @@ namespace MilbrandtFPDB
             DisplayedEntries.Clear();
             foreach(SitePlan sp in _entries.Values)
             {
-                bool match = true;
-                foreach(string property in SitePlan.Properties)
+                if (!sp.Removed)
                 {
-                    if (property == "SquareFeet")
+                    bool match = true;
+                    foreach (string property in SitePlan.Properties)
                     {
-                        // handle range
-                        if (SelectedValues[property].Value != VALUE_ANY)
+                        if (property == "SquareFeet")
                         {
-                            try
+                            // handle range
+                            if (SelectedValues[property].Value != VALUE_ANY)
                             {
-                                double d = sp.GetSquareFeetValue();
-                                string[] bounds = SelectedValues[property].Value.Split(" -".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
-                                double lower = double.Parse(bounds[0]);
-                                double upper = double.Parse(bounds[1]);
-                                if (d >= upper || d < lower)
+                                try
+                                {
+                                    double d = sp.GetSquareFeetValue();
+                                    string[] bounds = SelectedValues[property].Value.Split(" -".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                                    double lower = double.Parse(bounds[0]);
+                                    double upper = double.Parse(bounds[1]);
+                                    if (d >= upper || d < lower)
+                                        match = false;
+                                }
+                                catch
+                                {
                                     match = false;
+                                }
                             }
-                            catch
+                        }
+                        else if (property == "Date")
+                        {
+                            if (SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != sp.Date.Year.ToString())
                             {
                                 match = false;
                             }
                         }
-                    }
-                    else if (property == "Date")
-                    {
-                        if (SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != sp.Date.Year.ToString())
+                        else if (property != "FilePath" && SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != SitePlan.GetProperty(sp, property))
                         {
                             match = false;
                         }
                     }
-                    else if (property != "FilePath" && SelectedValues[property].Value != VALUE_ANY && SelectedValues[property].Value != SitePlan.GetProperty(sp, property))
+                    if (match)
                     {
-                        match = false;
+                        DisplayedEntries.Add(sp);
                     }
-                }
-                if (match)
-                {
-                    DisplayedEntries.Add(sp);
                 }
             }
         }
