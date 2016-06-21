@@ -49,9 +49,9 @@ namespace MilbrandtFPDB
     {
         private MainWindowViewModel _vm;
         private int _generatedColumns = 0;
-        private IInputElement _lastFocus = null;
         private List<SitePlan> _lastSelection = new List<SitePlan>();
         private bool _lastFocusInDataGrid = false;
+        private int _lastFocusRow = 0, _lastFocusCol = 0;
 
         public MainWindow()
         {
@@ -375,6 +375,7 @@ namespace MilbrandtFPDB
             // put keyboard focus on the selected cell
             if (dgSitePlans.SelectedIndex >= 0)
             {
+                //TODO: Figure out why this is null
                 DataGridRow row = dgSitePlans.ItemContainerGenerator.ContainerFromIndex(dgSitePlans.SelectedIndex) as DataGridRow;
                 if (row != null)
                 {
@@ -409,31 +410,36 @@ namespace MilbrandtFPDB
         private void VM_DisplayListChanging(object sender, EventArgs e)
         {
             // store last focus and selected
-            _lastFocus = Keyboard.FocusedElement;
             _lastSelection.Clear();
             _lastSelection.AddRange(dgSitePlans.SelectedItems.Cast<SitePlan>());
-            _lastFocusInDataGrid = dgSitePlans.IsFocused || dgSitePlans.IsKeyboardFocused || dgSitePlans.IsKeyboardFocusWithin;
+            DataGridCell focusCell = Keyboard.FocusedElement as DataGridCell;
+            if (focusCell != null)
+            {
+                _lastFocusInDataGrid = true;
+                _lastFocusCol = focusCell.Column.DisplayIndex;
+                _lastFocusRow = dgSitePlans.SelectedIndex;
+            }
+            else
+                _lastFocusInDataGrid = false;
         }
 
         private void VM_DisplayListChanged(object sender, EventArgs e)
         {
             // restore focus and selection
-            if (_lastFocusInDataGrid)
-            {
-                dgSitePlans.Focus();
-                _lastFocusInDataGrid = false;
-            }
             foreach (SitePlan sp in _lastSelection)
                 dgSitePlans.SelectedItems.Add(sp);
             _lastSelection.Clear();
-
-            if (_lastFocus != null)
+            if (_lastFocusInDataGrid)
             {
-                _lastFocus.Focus();
-                DataGridCell cell = _lastFocus as DataGridCell;
-                if (cell != null)
-                    cell.Focus();
-                _lastFocus = null;
+                dgSitePlans.Focus();
+                DataGridRow row = dgSitePlans.ItemContainerGenerator.ContainerFromIndex(_lastFocusRow) as DataGridRow;
+                if (row != null)
+                {
+                    DataGridCell cell = GetCell(dgSitePlans, row, _lastFocusCol);
+                    if (cell != null)
+                        cell.Focus();
+                }
+                _lastFocusInDataGrid = false;
             }
         }
 

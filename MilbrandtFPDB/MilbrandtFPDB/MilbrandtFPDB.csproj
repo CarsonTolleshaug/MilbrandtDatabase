@@ -99,7 +99,11 @@
     <Compile Include="Helpers\BitmapHelper.cs" />
     <Compile Include="Helpers\BitMask.cs" />
     <Compile Include="Helpers\GeneralHelpers.cs" />
+    <Compile Include="Helpers\SecurityHelper.cs" />
     <Compile Include="Helpers\SendInputHelper.cs" />
+    <Compile Include="PasswordWindow.xaml.cs">
+      <DependentUpon>PasswordWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI Components\EntryPropertiesPanel.xaml.cs">
       <DependentUpon>EntryPropertiesPanel.xaml</DependentUpon>
     </Compile>
@@ -143,6 +147,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="PasswordWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI Components\EntryPropertiesPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -219,6 +227,10 @@
     <Resource Include="Resources\Add.png" />
     <Resource Include="Resources\Edit.png" />
     <Resource Include="Resources\Remove.png" />
+    <Content Include="ExternalApps\FPDB_Authorize.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Resources\Open.png" />
     <Content Include="x64\pdfium.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

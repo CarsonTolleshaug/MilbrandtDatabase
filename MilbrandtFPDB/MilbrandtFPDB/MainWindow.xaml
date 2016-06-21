@@ -16,8 +16,8 @@
     <Window.Resources>
         <!-- Gradient Brush used to show which columns are filtered -->
         <LinearGradientBrush x:Key="ColumnFilterBrush" EndPoint="0.5,1" StartPoint="0.5,0">
-            <GradientStop Color="#FFDFECF7" Offset="0.439"/>
-            <GradientStop Color="#FFBDE4FF" Offset="0.456"/>
+            <GradientStop Color="#A7D8F2" Offset="0.439"/>
+            <GradientStop Color="#85C3E5" Offset="0.456"/>
         </LinearGradientBrush>
     </Window.Resources>
 
@@ -37,7 +37,7 @@
         <Rectangle Grid.ColumnSpan="2" Fill="White" />
         <Button x:Name="btnOpenPDF" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="8,1" Margin="55,0" MinWidth="35" Click="btnOpenPDF_Click">
             <StackPanel Orientation="Horizontal">
-                <Image Width="20" Height="20" Source="Resources/open_icon.png" Opacity="0.6" />
+                <Image Width="20" Height="20" Source="Resources/Open.png" />
                 <TextBlock Text="Open PDF" VerticalAlignment="Center" Margin="5,0" />
             </StackPanel>
         </Button>
@@ -74,7 +74,7 @@
         <StackPanel x:Name="MenuRightPanel" Grid.ColumnSpan="2" Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Right" Background="White">
             <Rectangle Fill="LightGray" Height="28" Width="1" VerticalAlignment="Center" Margin="10, 0, 0, 0" ></Rectangle>
             <Button x:Name="btnSettings" Grid.ColumnSpan="2" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0" Click="btnSettings_Click">
-                <Image Width="20" Height="20" Source="Resources/settings_icon.png" Opacity="0.6" />
+                <Image Width="18" Height="18" Margin="1" Source="Resources/settings_icon.png" Opacity="0.6" />
             </Button>
         </StackPanel>
         
